@@ -24,17 +24,11 @@ export function translateAuthError(error: AuthError | string): string {
       lowerMessage.includes('invalid credentials') ||
       lowerMessage.includes('email already exists') || 
       lowerMessage.includes('user already exists') || 
-      lowerMessage.includes('email is already in use')) {
+      lowerMessage.includes('email is already in use') ||
+      (lowerMessage.includes('password') && (lowerMessage.includes('weak') || lowerMessage.includes('too short') || lowerMessage.includes('minimum'))) ||
+      lowerMessage.includes('invalid email') || 
+      lowerMessage.includes('email is not valid')) {
     return 'البريد الإلكتروني أو كلمة المرور بها مشاكل.';
-  }
-
-  if (lowerMessage.includes('password') && (lowerMessage.includes('weak') || lowerMessage.includes('too short') || lowerMessage.includes('minimum'))) {
-    return 'كلمة المرور ضعيفة جدًا. يرجى استخدام كلمة مرور أطول وأقوى.';
-  }
-
-  // Validation errors
-  if (lowerMessage.includes('invalid email') || lowerMessage.includes('email is not valid')) {
-    return 'البريد الإلكتروني غير صالح. يرجى إدخال عنوان بريد إلكتروني صحيح.';
   }
 
   if (lowerMessage.includes('required') || lowerMessage.includes('missing')) {
