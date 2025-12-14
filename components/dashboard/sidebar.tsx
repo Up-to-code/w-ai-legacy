@@ -12,7 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Menu,
-  Megaphone
+  Megaphone,
+  Globe, // Used for Integrations icon (or use Link/Puzzle if available)
+  LayoutGrid
 } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
@@ -58,7 +60,7 @@ export function Sidebar() {
           {!isCollapsed && <h3 className="text-xs font-semibold text-muted-foreground mb-4 px-2">القائمة الرئيسية</h3>}
           <nav className="space-y-1">
             <NavItem href="/dashboard" icon={LayoutDashboard} label="لوحة التحكم" collapsed={isCollapsed} active={pathname === '/dashboard'} />
-            <NavItem href="/dashboard/companies" icon={Users} label="العملاء" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/companies')} />
+            <NavItem href="/dashboard/companies" icon={Users} label="جهات الاتصال" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/companies')} />
             <NavItem href="/dashboard/templates" icon={MessageSquare} label="قوالب الرسائل" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/templates')} />
             <NavItem href="/dashboard/templates" icon={MessageSquare} label="قوالب الرسائل" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/templates')} />
             <NavItem href="/dashboard/campaigns" icon={Megaphone} label="الحملات" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/campaigns')} />
@@ -69,8 +71,9 @@ export function Sidebar() {
         <div>
            {!isCollapsed && <h3 className="text-xs font-semibold text-muted-foreground mb-4 px-2">الإعدادات</h3>}
           <nav className="space-y-1">
-            <NavItem href="/dashboard/settings" icon={Settings} label="إعدادات المنصة" collapsed={isCollapsed} />
-            <NavItem href="/dashboard/help" icon={HelpCircle} label="مركز المساعدة" collapsed={isCollapsed} />
+            <NavItem href="/dashboard/integrations" icon={LayoutGrid} label="سوق التطبيقات" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/integrations')} badge="جديد" />
+            <NavItem href="/dashboard/settings" icon={Settings} label="إعدادات المنصة" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/settings')} />
+            <NavItem href="/dashboard/help" icon={HelpCircle} label="مركز المساعدة" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/help')} />
             <NavItem href="/logout" icon={LogOut} label="تسجيل خروج" collapsed={isCollapsed} variant="danger" />
           </nav>
         </div>

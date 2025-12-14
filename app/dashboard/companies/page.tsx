@@ -1,77 +1,114 @@
 "use client";
 
 import { Header } from "@/components/dashboard/header";
-import { Search, Filter, Download, X, MessageSquare, Phone, Mail, Globe, Clock, User, Send } from "lucide-react";
+import { Search, Filter, Download, Upload, Plus, MoreHorizontal, MessageSquare, Phone, Mail, User, X, Clock, Send, Globe } from "lucide-react";
 import { useState } from "react";
 
-export default function CompaniesPage() {
+export default function ContactsPage() {
   const [selectedCustomer, setSelectedCustomer] = useState<number | null>(null);
+  const [isAddDrawerOpen, setIsAddDrawerOpen] = useState(false);
 
   return (
     <>
       <Header />
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">العملاء</h1>
-        <p className="text-gray-500">إدارة قائمة العملاء وحالات التواصل.</p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+           <h1 className="text-2xl font-bold text-gray-900">جهات الاتصال</h1>
+           <p className="text-gray-500 text-sm mt-1">قائمة بجميع العملاء والمستخدمين المسجلين في المتجر.</p>
+        </div>
+        <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-all">
+                <Upload className="w-4 h-4" /> استيراد
+            </button>
+            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm transition-all">
+                <Download className="w-4 h-4" /> تصدير
+            </button>
+            <button 
+                onClick={() => setIsAddDrawerOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all"
+            >
+                <Plus className="w-4 h-4" /> إضافة عميل جديد
+            </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden relative">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden relative">
         {/* Toolbar */}
-        <div className="p-6 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between">
+        <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between bg-white">
            <div className="relative w-full md:w-96">
                 <input 
                   type="text" 
-                  placeholder="بحث عن عميل..." 
-                  className="w-full pl-4 pr-10 py-2 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary"
+                  placeholder="بحث بالاسم، الرقم، أو البريد..." 
+                  className="w-full pl-4 pr-10 py-2.5 bg-gray-50 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all"
                 />
                  <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
            </div>
            <div className="flex gap-2">
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
+                <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors">
                     <Filter className="w-4 h-4" /> تصفية
-                </button>
-                 <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50">
-                    <Download className="w-4 h-4" /> تصدير
                 </button>
            </div>
         </div>
 
-        {/* Table */}
+        {/* Salla-Style Table */}
         <div className="overflow-x-auto">
             <table className="w-full text-right">
-                <thead className="bg-gray-50 text-gray-500 text-sm">
+                <thead className="bg-[#fcfcfc] text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
                     <tr>
+                        <th className="px-6 py-4 font-medium w-12 text-center">
+                            <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
+                        </th>
                         <th className="px-6 py-4 font-medium">العميل</th>
-                        <th className="px-6 py-4 font-medium">رقم الهاتف</th>
-                        <th className="px-6 py-4 font-medium">الحالة</th>
-                        <th className="px-6 py-4 font-medium">آخر تفاعل</th>
+                        <th className="px-6 py-4 font-medium">معلومات الاتصال</th>
+                        <th className="px-6 py-4 font-medium">الوسوم (Tags)</th>
+                        <th className="px-6 py-4 font-medium">عدد الطلبات</th>
+                        <th className="px-6 py-4 font-medium">آخر نشاط</th>
                         <th className="px-6 py-4 font-medium"></th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                <tbody className="divide-y divide-gray-50">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <tr key={i} className="hover:bg-blue-50/30 transition-colors group">
+                             <td className="px-6 py-4 text-center">
+                                <input type="checkbox" className="rounded border-gray-300 text-primary focus:ring-primary" />
+                            </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                        {'ABC'[i%3]}
+                                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm border border-gray-200">
+                                        {'ABCD'[i%4]}
                                     </div>
-                                    <span className="font-medium text-gray-900">شركة المثال {i}</span>
+                                    <div>
+                                        <p className="font-bold text-gray-900 text-sm">محمد أحمد {i}</p>
+                                        <p className="text-xs text-gray-400">عميل جديد</p>
+                                    </div>
                                 </div>
                             </td>
-                            <td className="px-6 py-4 text-gray-600" dir="ltr text-right">+966 50 123 4567</td>
                             <td className="px-6 py-4">
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    نشط
-                                </span>
+                                <div className="flex flex-col gap-1">
+                                    <span className="text-sm text-gray-700 font-medium" dir="ltr">+966 50 123 45{i}</span>
+                                    <span className="text-xs text-gray-400">test{i}@example.com</span>
+                                </div>
                             </td>
-                            <td className="px-6 py-4 text-gray-500 text-sm">منذ ساعتين</td>
+                             <td className="px-6 py-4">
+                                <div className="flex gap-1 flex-wrap">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                        VIP
+                                    </span>
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-green-50 text-green-700 border border-green-100">
+                                        واتساب
+                                    </span>
+                                </div>
+                            </td>
+                            <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                                {i * 3} طلبات
+                            </td>
+                            <td className="px-6 py-4 text-gray-500 text-xs">قبل {i} ساعات</td>
                             <td className="px-6 py-4">
                                 <button 
                                     onClick={() => setSelectedCustomer(i)}
-                                    className="text-primary hover:text-primary/80 font-medium text-sm"
+                                    className="p-2 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                                 >
-                                    عرض التفاصيل
+                                    عرض
                                 </button>
                             </td>
                         </tr>
@@ -81,19 +118,63 @@ export default function CompaniesPage() {
         </div>
         
          {/* Pagination */}
-        <div className="p-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
-            <span>عرض 1 إلى 5 من أصل 24 عميل</span>
+        <div className="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500 bg-gray-50/50">
+            <span>عرض 1 إلى 6 من أصل 128 عميل</span>
             <div className="flex items-center gap-2">
-                <button className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50" disabled>السابق</button>
-                <button className="px-3 py-1 bg-primary text-white rounded-lg">1</button>
-                <button className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50">2</button>
-                <button className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50">3</button>
+                <button className="px-3 py-1.5 border border-gray-200 rounded-md hover:bg-white disabled:opacity-50 transition-colors" disabled>السابق</button>
+                <button className="px-3 py-1.5 border border-gray-200 bg-white shadow-sm rounded-md font-bold text-primary">1</button>
+                <button className="px-3 py-1.5 border border-gray-200 rounded-md hover:bg-white transition-colors">2</button>
+                <button className="px-3 py-1.5 border border-gray-200 rounded-md hover:bg-white transition-colors">3</button>
                 <span>...</span>
-                <button className="px-3 py-1 border border-gray-200 rounded-lg hover:bg-gray-50">التالي</button>
+                <button className="px-3 py-1.5 border border-gray-200 rounded-md hover:bg-white transition-colors">التالي</button>
             </div>
         </div>
 
-        {/* Customer Drawer Overlay */}
+        {/* Add Customer Drawer (Slide-over) */}
+        {isAddDrawerOpen && (
+             <div className="fixed inset-0 z-50 flex justify-end">
+                <div 
+                    className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity"
+                    onClick={() => setIsAddDrawerOpen(false)}
+                ></div>
+                <div className="relative w-full max-w-md bg-white h-full shadow-2xl animate-in slide-in-from-left duration-300 flex flex-col">
+                    <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                        <h2 className="text-lg font-bold">إضافة عميل جديد</h2>
+                        <button onClick={() => setIsAddDrawerOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-6 space-y-4 overflow-y-auto flex-1">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">اسم العميل</label>
+                            <input type="text" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none" placeholder="الاسم الأول والأخير" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف (واتساب)</label>
+                            <input type="tel" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-left" placeholder="+966..." dir="ltr" />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                            <input type="email" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none text-left" placeholder="example@mail.com" />
+                        </div>
+                         <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">الوسوم (Tags)</label>
+                            <select className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+                                <option>عميل VIP</option>
+                                <option>عميل جديد</option>
+                                <option>استفسار عام</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="p-5 border-t border-gray-100 bg-gray-50 flex gap-3">
+                         <button className="flex-1 bg-primary text-white py-2.5 rounded-lg font-bold hover:bg-primary/90 transition-colors">حفظ العميل</button>
+                         <button onClick={() => setIsAddDrawerOpen(false)} className="flex-1 bg-white border border-gray-200 text-gray-700 py-2.5 rounded-lg font-bold hover:bg-gray-50 transition-colors">إلغاء</button>
+                    </div>
+                </div>
+             </div>
+        )}
+
+        {/* Existing View Customer Drawer */}
         {selectedCustomer && (
             <div className="fixed inset-0 z-50 flex justify-end">
                 {/* Backdrop */}
@@ -108,7 +189,7 @@ export default function CompaniesPage() {
                     <div className="p-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                         <h2 className="text-lg font-bold flex items-center gap-2">
                             <User className="w-5 h-5 text-gray-500" />
-                            تفاصيل العميل - شركة المثال {selectedCustomer}
+                            تفاصيل العميل - محمد أحمد {selectedCustomer}
                         </h2>
                         <button 
                             onClick={() => setSelectedCustomer(null)}
@@ -124,24 +205,24 @@ export default function CompaniesPage() {
                         <div className="w-full md:w-1/3 border-l border-gray-100 p-6 overflow-y-auto bg-gray-50/30">
                             <div className="text-center mb-6">
                                 <div className="w-20 h-20 bg-primary/10 text-primary rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3">
-                                    {'ABC'[selectedCustomer%3]}
+                                    {'ABCD'[selectedCustomer%4]}
                                 </div>
-                                <h3 className="font-bold text-gray-900">شركة المثال {selectedCustomer}</h3>
+                                <h3 className="font-bold text-gray-900">محمد أحمد {selectedCustomer}</h3>
                                 <p className="text-sm text-gray-500">عميل نشط</p>
                             </div>
 
                             <div className="space-y-4 text-sm">
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <Phone className="w-4 h-4" />
-                                    <span dir="ltr">+966 50 123 4567</span>
+                                    <span dir="ltr">+966 50 123 45{selectedCustomer}</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <Mail className="w-4 h-4" />
-                                    <span>info@example.com</span>
+                                    <span>test{selectedCustomer}@example.com</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <Globe className="w-4 h-4" />
-                                    <span>www.website.com</span>
+                                    <span>-</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <Clock className="w-4 h-4" />
@@ -154,7 +235,7 @@ export default function CompaniesPage() {
                             <div className="space-y-2">
                                 <h4 className="font-semibold text-xs text-gray-400 uppercase">الملاحظات</h4>
                                 <p className="text-sm text-gray-600 leading-relaxed bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                                    عميل مهتم جداً بخدمة الرد الآلي، يفضل التواصل في الفترة الصباحية.
+                                    عميل مهتم بمنتجات التجميل.
                                 </p>
                             </div>
                         </div>
@@ -178,7 +259,7 @@ export default function CompaniesPage() {
                                 {/* User Message */}
                                 <div className="flex gap-3 flex-row-reverse">
                                     <div className="flex-1 bg-white p-3 rounded-2xl rounded-tr-none shadow-sm border border-gray-100 text-sm">
-                                        <p className="text-gray-800">مرحباً، هل يمكنني معرفة أوقات العمل؟</p>
+                                        <p className="text-gray-800">مرحباً، تفاصيل الطلب؟</p>
                                         <div className="text-[10px] text-gray-400 mt-1 text-right">09:15 AM</div>
                                     </div>
                                 </div>
@@ -189,16 +270,8 @@ export default function CompaniesPage() {
                                         <span className="text-white text-xs">AI</span>
                                     </div>
                                     <div className="flex-1 bg-primary/5 p-3 rounded-2xl rounded-tl-none text-sm text-gray-800">
-                                        <p>أهلاً بك! نحن نعمل يومياً من الساعة 9 صباحاً حتى 5 مساءً بتوقيت الرياض. كيف يمكنني مساعدتك أيضاً؟</p>
+                                        <p>أهلاً بك! طلبك قيد التحضير.</p>
                                         <div className="text-[10px] text-gray-400 mt-1">09:15 AM</div>
-                                    </div>
-                                </div>
-
-                                {/* User Message */}
-                                <div className="flex gap-3 flex-row-reverse">
-                                    <div className="flex-1 bg-white p-3 rounded-2xl rounded-tr-none shadow-sm border border-gray-100 text-sm">
-                                        <p className="text-gray-800">شكراً لك، هذا كل شيء.</p>
-                                        <div className="text-[10px] text-gray-400 mt-1 text-right">09:16 AM</div>
                                     </div>
                                 </div>
                             </div>
