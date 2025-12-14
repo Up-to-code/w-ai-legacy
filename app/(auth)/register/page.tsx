@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import { translateAuthError, logAuthError } from "@/lib/error-utils";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -31,7 +32,13 @@ export default function RegisterPage() {
              router.push("/dashboard");
         },
         onError: (ctx) => {
-             setError(ctx.error.message);
+             // Translate error to user-friendly Arabic message
+             const translatedError = translateAuthError(ctx.error.message);
+             setError(translatedError);
+             
+             // Log error with context for debugging
+             logAuthError('Registration', ctx.error, { email, name });
+             
              setLoading(false);
         }
     });
