@@ -18,10 +18,18 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const pathname = usePathname();
+  const { user, isLoading, logout } = useAuth();
+
+  // Extract user initials from name
+  const getUserInitial = () => {
+    if (!user?.name) return "U";
+    return user.name.charAt(0).toUpperCase();
+  };
 
   return (
     <aside 
@@ -62,7 +70,6 @@ export function Sidebar() {
             <NavItem href="/dashboard" icon={LayoutDashboard} label="لوحة التحكم" collapsed={isCollapsed} active={pathname === '/dashboard'} />
             <NavItem href="/dashboard/companies" icon={Users} label="جهات الاتصال" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/companies')} />
             <NavItem href="/dashboard/templates" icon={MessageSquare} label="قوالب الرسائل" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/templates')} />
-            <NavItem href="/dashboard/templates" icon={MessageSquare} label="قوالب الرسائل" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/templates')} />
             <NavItem href="/dashboard/campaigns" icon={Megaphone} label="الحملات" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/campaigns')} />
             <NavItem href="/dashboard/bot" icon={Bot} label="الرد الآلي AI" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/bot')} badge="جديد" />
           </nav>
@@ -74,7 +81,6 @@ export function Sidebar() {
             <NavItem href="/dashboard/integrations" icon={LayoutGrid} label="سوق التطبيقات" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/integrations')} badge="جديد" />
             <NavItem href="/dashboard/settings" icon={Settings} label="إعدادات المنصة" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/settings')} />
             <NavItem href="/dashboard/help" icon={HelpCircle} label="مركز المساعدة" collapsed={isCollapsed} active={pathname?.startsWith('/dashboard/help')} />
-            <NavItem href="/logout" icon={LogOut} label="تسجيل خروج" collapsed={isCollapsed} variant="danger" />
           </nav>
         </div>
       </div>
@@ -97,19 +103,42 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* User / Plan Info */}
+      {/* User Info */}
       <div className="p-4 border-t border-gray-100">
-        <div className={`flex items-center gap-3 ${isCollapsed ? "justify-center" : ""}`}>
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                <span className="font-bold text-primary">A</span>
-            </div>
-            {!isCollapsed && (
-                <div className="overflow-hidden">
-                    <p className="font-semibold text-sm truncate">Ahmed User</p>
-                    <p className="text-xs text-gray-500 truncate">باقة المحترفين</p>
-                </div>
+        <Link 
+          href="/dashboard/settings"
+          className={`flex items-center gap-3 hover:bg-gray-50 rounded-xl p-2 transition-colors ${isCollapsed ? "justify-center" : ""}`}
+        >
+            {isLoading ? (
+              <>
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse shrink-0"></div>
+                {!isCollapsed && (
+                  <div className="overflow-hidden flex-1">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                {user?.image ? (
+                  <img 
+                    src={user.image} 
+                    alt={user.name || "User"} 
+                    className="w-10 h-10 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <span className="font-bold text-primary">{getUserInitial()}</span>
+                  </div>
+                )}
+                {!isCollapsed && (
+                  <div className="overflow-hidden">
+                    <p className="font-semibold text-sm truncate">{user?.name || "مستخدم"}</p>
+                  </div>
+                )}
+              </>
             )}
-        </div>
+        </Link>
       </div>
     </aside>
   );

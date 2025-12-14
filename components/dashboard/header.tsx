@@ -3,10 +3,18 @@
 import { Search, Mail, Bell, User, Settings, LogOut, ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Header() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { user, isLoading, logout } = useAuth();
+
+  // Get user initial for avatar fallback
+  const getUserInitial = () => {
+    if (!user?.name) return "U";
+    return user.name.charAt(0).toUpperCase();
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -52,23 +60,39 @@ export function Header() {
         
         {/* Profile Dropdown */}
         <div className="relative" ref={dropdownRef}>
-            <button 
-                onClick={() => setIsProfileOpen(!isProfileOpen)}
-                className="flex items-center gap-3 pr-2 border-r border-gray-200 mr-2 hover:bg-gray-50 rounded-lg p-1 transition-colors"
-            >
-                <div className="w-10 h-10 rounded-full bg-orange-100 p-0.5">
-                    <img 
-                        src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed" 
-                        alt="User" 
-                        className="w-full h-full rounded-full"
-                    />
+            {isLoading ? (
+              <div className="flex items-center gap-3 pr-2 border-r border-gray-200 mr-2 p-1">
+                <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                <div className="hidden md:block">
+                  <div className="h-4 w-24 bg-gray-200 rounded animate-pulse mb-1"></div>
+                  <div className="h-3 w-32 bg-gray-200 rounded animate-pulse"></div>
                 </div>
-                <div className="hidden md:block text-sm text-right">
-                    <p className="font-semibold text-gray-900 leading-none mb-1">Ahmed User</p>
-                    <p className="text-gray-500 text-xs text-right">ahmed@example.com</p>
-                </div>
-                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
-            </button>
+              </div>
+            ) : (
+              <button 
+                  onClick={() => setIsProfileOpen(!isProfileOpen)}
+                  className="flex items-center gap-3 pr-2 border-r border-gray-200 mr-2 hover:bg-gray-50 rounded-lg p-1 transition-colors"
+              >
+                  {user?.image ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden">
+                      <img 
+                          src={user.image} 
+                          alt={user.name || "User"} 
+                          className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="font-bold text-primary">{getUserInitial()}</span>
+                    </div>
+                  )}
+                  <div className="hidden md:block text-sm text-right">
+                      <p className="font-semibold text-gray-900 leading-none mb-1">{user?.name || "مستخدم"}</p>
+                      <p className="text-gray-500 text-xs text-right">{user?.email || ""}</p>
+                  </div>
+                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
+              </button>
+            )}
 
              {isProfileOpen && (
                 <div className="absolute top-full left-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
@@ -82,9 +106,9 @@ export function Header() {
                         <Settings className="w-4 h-4" /> الإعدادات
                     </Link>
                     <div className="border-t border-gray-50 my-2"></div>
-                    <Link href="/logout" className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                    <button onClick={logout} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50">
                         <LogOut className="w-4 h-4" /> تسجيل الخروج
-                    </Link>
+                    </button>
                 </div>
              )}
         </div>

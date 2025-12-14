@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export function Navbar() {
+  const { isAuthenticated, user, isLoading } = useAuth();
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 transition-all duration-300">
       <div className="flex items-center justify-between py-4 px-6 md:px-12 max-w-7xl mx-auto">
@@ -20,12 +25,24 @@ export function Navbar() {
         </div>
   
         <div className="flex items-center gap-4">
-          <Link href="/login" className="hidden md:block text-sm font-semibold text-gray-600 hover:text-[#105D3B] transition-colors">
-            تسجيل الدخول
-          </Link>
-          <Link href="/register" className="bg-[#105D3B] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0d4f32] shadow-lg shadow-green-900/10 hover:shadow-green-900/20 transition-all flex items-center gap-2">
-            ابدأ الآن <ArrowLeft className="w-4 h-4" />
-          </Link>
+          {isLoading ? (
+            <div className="w-24 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+          ) : isAuthenticated ? (
+            <>
+              <Link href="/dashboard" className="bg-[#105D3B] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0d4f32] shadow-lg shadow-green-900/10 hover:shadow-green-900/20 transition-all flex items-center gap-2">
+                الذهاب إلى لوحة التحكم <ArrowLeft className="w-4 h-4" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link href="/login" className="hidden md:block text-sm font-semibold text-gray-600 hover:text-[#105D3B] transition-colors">
+                تسجيل الدخول
+              </Link>
+              <Link href="/register" className="bg-[#105D3B] text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-[#0d4f32] shadow-lg shadow-green-900/10 hover:shadow-green-900/20 transition-all flex items-center gap-2">
+                ابدأ الآن <ArrowLeft className="w-4 h-4" />
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>

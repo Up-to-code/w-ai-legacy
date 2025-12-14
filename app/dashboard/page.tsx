@@ -1,19 +1,34 @@
+"use client";
+
 import { Header } from "@/components/dashboard/header";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { Users, MessageSquare, CheckCircle, Clock, Plus } from "lucide-react";
 import { TeamCollaboration } from "@/components/dashboard/team-widgets";
-// Reusing some components but conceptually repurposing them
 import { ProjectAnalytics } from "@/components/dashboard/project-analytics";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DashboardPage() {
+  const { user, isLoading } = useAuth();
+  
   return (
     <>
       <Header />
       
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-           <h1 className="text-3xl font-bold mb-2">لوحة التحكم</h1>
-           <p className="text-gray-500">نظرة عامة على نشاط الرد الآلي والعملاء.</p>
+           {isLoading ? (
+             <>
+               <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2"></div>
+               <div className="h-5 w-64 bg-gray-200 rounded animate-pulse"></div>
+             </>
+           ) : (
+             <>
+               <h1 className="text-3xl font-bold mb-2">
+                 مرحباً، {user?.name || "مستخدم"} 👋
+               </h1>
+               <p className="text-gray-500">نظرة عامة على نشاط الرد الآلي والعملاء.</p>
+             </>
+           )}
         </div>
         <div className="flex gap-3">
              <button className="bg-[#105D3B] text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-[#0d4f32]">

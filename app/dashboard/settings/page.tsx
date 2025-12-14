@@ -1,8 +1,9 @@
 "use client";
 
 import { Header } from "@/components/dashboard/header";
-import { User, Bell, Lock, Globe, Save, MessageSquare, Smartphone, Mail, Shield, Key, Eye, ChevronLeft, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { User, Bell, Lock, Globe, Save, MessageSquare, Smartphone, Mail, Shield, Key, Eye, ChevronLeft, CheckCircle, LogOut } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'profile' | 'notifications' | 'security' | 'integrations'>('profile');
@@ -76,6 +77,87 @@ function TabButton({ active, onClick, icon: Icon, label }: any) {
 }
 
 function ProfileTab() {
+    const { user, isLoading, updateProfile } = useAuth();
+    const [formData, setFormData] = useState({ 
+      name: "",
+      phone: "",
+      jobTitle: ""
+    });
+    const [saving, setSaving] = useState(false);
+    const [message, setMessage] = useState<{ type: "success" | "error", text: string } | null>(null);
+    const [loadingProfile, setLoadingProfile] = useState(true);
+    
+    // Fetch full user profile from database (includes phone and jobTitle)
+    useEffect(() => {
+      async function loadProfile() {
+        const { getUserProfile } = await import("@/app/actions/profile");
+        const result = await getUserProfile();
+        
+        if (result.success && result.user) {
+          setFormData({
+            name: result.user.name || "",
+            phone: result.user.phone || "",
+            jobTitle: result.user.jobTitle || ""
+          });
+        } else if (user) {
+          // Fallback to session user if database fetch fails
+          setFormData({
+            name: user.name || "",
+            phone: user.phone || "",
+            jobTitle: user.jobTitle || ""
+          });
+        }
+        
+        setLoadingProfile(false);
+      }
+      
+      if (user) {
+        loadProfile();
+      }
+    }, [user]);
+    
+    // Get user initial for avatar fallback
+    const getUserInitial = () => {
+      if (!user?.name) return "U";
+      return user.name.charAt(0).toUpperCase();
+    };
+
+    const handleSave = async () => {
+      if (!formData.name || formData.name.trim() === "") {
+        setMessage({ type: "error", text: "الاسم مطلوب" });
+        return;
+      }
+
+      setSaving(true);
+      setMessage(null);
+
+      const result = await updateProfile({ 
+        name: formData.name,
+        phone: formData.phone || undefined,
+        jobTitle: formData.jobTitle || undefined
+      });
+
+      setSaving(false);
+
+      if (result.success) {
+        setMessage({ type: "success", text: result.message || "تم تحديث الملف الشخصي بنجاح" });
+        
+        // Update form data with the returned user data (includes phone and jobTitle)
+        // Session refetch won't include custom fields, so we keep the form in sync manually
+        if (result.user) {
+          setFormData({
+            name: result.user.name || "",
+            phone: result.user.phone || "",
+            jobTitle: result.user.jobTitle || ""
+          });
+        }
+        
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage({ type: "error", text: result.error || "حدث خطأ أثناء التحديث" });
+      }
+    };
+    
     return (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <h3 className="text-xl font-bold mb-6">الملف الشخصي</h3>
@@ -83,40 +165,106 @@ function ProfileTab() {
             <div className="flex items-center gap-6 mb-8">
                 <div className="relative">
                     <div className="w-24 h-24 rounded-full bg-gray-100 border-4 border-white shadow-sm flex items-center justify-center overflow-hidden">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ahmed" alt="Ahmed" className="w-full h-full" />
+                        {isLoading ? (
+                          <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+                        ) : user?.image ? (
+                          <img src={user.image} alt={user.name || "User"} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                            <span className="text-3xl font-bold text-primary">{getUserInitial()}</span>
+                          </div>
+                        )}
                     </div>
                     <button className="absolute bottom-0 right-0 bg-primary text-white p-1.5 rounded-full border-2 border-white shadow-sm hover:bg-primary/90">
                         <User className="w-4 h-4" />
                     </button>
                 </div>
                 <div>
-                    <h4 className="font-bold text-lg">Ahmed User</h4>
-                    <p className="text-gray-500 text-sm">مدير الحساب</p>
+                    {isLoading ? (
+                      <>
+                        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-1"></div>
+                        <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                      </>
+                    ) : (
+                      <>
+                        <h4 className="font-bold text-lg">{user?.name || "مستخدم"}</h4>
+                        <p className="text-gray-500 text-sm">مدير الحساب</p>
+                      </>
+                    )}
                 </div>
             </div>
+
+            {message && (
+              <div className={`mb-6 p-4 rounded-xl border ${
+                message.type === "success" 
+                  ? "bg-green-50 border-green-200 text-green-800" 
+                  : "bg-red-50 border-red-200 text-red-800"
+              }`}>
+                {message.text}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">الاسم الكامل</label>
-                    <input type="text" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" defaultValue="Ahmed User" />
+                    <input 
+                      type="text" 
+                      className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" 
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="اسمك الكامل"
+                    />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
-                    <input type="email" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" defaultValue="ahmed@example.com" />
+                    <input 
+                      type="email" 
+                      className="w-full p-3 bg-gray-100 rounded-xl border border-gray-200 cursor-not-allowed" 
+                      value={user?.email || ""}
+                      disabled
+                      placeholder="example@email.com"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">لا يمكن تغيير البريد الإلكتروني</p>
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
-                    <input type="text" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" defaultValue="+966 50 000 0000" dir="ltr text-right" />
+                    <input 
+                      type="text" 
+                      className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" 
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="+966 50 000 0000"
+                      dir="ltr"
+                    />
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">المسمى الوظيفي</label>
-                    <input type="text" className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" defaultValue="Manager" />
+                    <input 
+                      type="text" 
+                      className="w-full p-3 bg-gray-50 rounded-xl border border-gray-200 focus:border-primary focus:outline-none" 
+                      value={formData.jobTitle}
+                      onChange={(e) => setFormData({ ...formData, jobTitle: e.target.value })}
+                      placeholder="Manager"
+                    />
                 </div>
             </div>
 
             <div className="border-t border-gray-100 pt-8 flex justify-end">
-                <button className="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-primary/90">
-                    <Save className="w-4 h-4" /> حفظ التغييرات
+                <button 
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="bg-primary text-white px-6 py-2.5 rounded-xl font-semibold flex items-center gap-2 hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    {saving ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                        جاري الحفظ...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" /> حفظ التغييرات
+                      </>
+                    )}
                 </button>
             </div>
         </div>
@@ -184,7 +332,9 @@ function NotificationsTab() {
 }
 
 function SecurityTab() {
-     return (
+  const { logout } = useAuth();
+  
+  return (
         <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
             <h3 className="text-xl font-bold mb-6">الأمان وكلمة المرور</h3>
             <div className="space-y-6">
@@ -211,6 +361,25 @@ function SecurityTab() {
                     </div>
                      <button className="px-4 py-2 border border-gray-200 bg-white rounded-lg text-sm font-medium hover:bg-gray-50">
                         تفعيل
+                     </button>
+                </div>
+                
+                {/* Logout Section */}
+                <div className="bg-red-50 p-6 rounded-2xl border border-red-100 flex items-center justify-between">
+                     <div className="flex gap-4">
+                         <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-red-100">
+                            <LogOut className="w-5 h-5 text-red-600" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-red-900">تسجيل الخروج</h4>
+                            <p className="text-sm text-red-700">تسجيل الخروج من حسابك على هذا الجهاز.</p>
+                        </div>
+                    </div>
+                     <button 
+                       onClick={logout}
+                       className="px-6 py-2.5 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors"
+                     >
+                        تسجيل خروج
                      </button>
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
 import { translateAuthError, logAuthError } from "@/lib/error-utils";
+import { PublicGuard } from "@/components/auth/public-guard";
 import { Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -45,7 +46,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8" dir="rtl">
+    <PublicGuard>
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8" dir="rtl">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
          <div className="flex justify-center mb-6">
             <Link href="/" className="w-12 h-12 rounded-full border-2 border-[#105D3B] flex items-center justify-center text-[#105D3B] font-bold text-2xl hover:bg-green-50 transition-colors">
@@ -176,5 +178,6 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    </PublicGuard>
   );
 }
