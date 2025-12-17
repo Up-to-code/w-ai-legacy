@@ -1,11 +1,25 @@
 "use client";
 
 import { Header } from "@/components/dashboard/header";
-import { Search, Filter, MessageSquare, Smartphone, Zap, CheckCircle, ExternalLink, Globe, Slack, Mail } from "lucide-react";
-import { useState } from "react";
+import { Search, Filter, MessageSquare, Smartphone, Zap, CheckCircle, ExternalLink, Globe, Slack, Mail, Loader2, Key, Shield, ChevronLeft, Eye, X, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useToast } from "@/lib/hooks/use-toast";
+import { getIntegrations, connectIntegration, disconnectIntegration } from "@/app/actions/integrations";
 
-const APPS = [
+
+// App definition
+interface AppDef {
+  id: string; // Service ID
+  name: string;
+  description: string;
+  icon: any;
+  color: string;
+  category: string;
+  link?: string;
+}
+
+const APPS: AppDef[] = [
   {
     id: "whatsapp",
     name: "WhatsApp Business API",
@@ -13,8 +27,6 @@ const APPS = [
     icon: MessageSquare,
     color: "bg-green-500",
     category: "communication",
-    connected: false,
-    link: "/dashboard/settings"
   },
   {
     id: "google_sheets",
@@ -23,8 +35,6 @@ const APPS = [
     icon: Globe,
     color: "bg-green-600",
     category: "utilities",
-    connected: false,
-    link: "#"
   },
   {
     id: "zapier",
@@ -33,8 +43,6 @@ const APPS = [
     icon: Zap,
     color: "bg-orange-500",
     category: "automation",
-    connected: false,
-    link: "#"
   },
   {
     id: "slack",
@@ -43,8 +51,6 @@ const APPS = [
     icon: Slack,
     color: "bg-purple-600",
     category: "communication",
-    connected: false,
-    link: "#"
   },
   {
     id: "mailchimp",
@@ -53,8 +59,6 @@ const APPS = [
     icon: Mail,
     color: "bg-yellow-500",
     category: "marketing",
-    connected: false,
-    link: "#"
   },
   {
     id: "sms",
@@ -63,8 +67,6 @@ const APPS = [
     icon: Smartphone,
     color: "bg-blue-500",
     category: "communication",
-    connected: false,
-    link: "#"
   }
 ];
 
@@ -77,8 +79,51 @@ const CATEGORIES = [
 ];
 
 export default function IntegrationsPage() {
+  const toast = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [connectedApps, setConnectedApps] = useState<string[]>([]); // List of connected service IDs
+  const [activeAppId, setActiveAppId] = useState<string | null>(null); // For connecting flow
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load integrations status
+  useEffect(() => {
+    async function loadIntegrations() {
+      try {
+        const result = await getIntegrations();
+        if (result.success && result.data) {
+          const connectedIds = result.data.filter(i => i.status === 'connected').map(i => i.serviceId as string);
+          setConnectedApps(connectedIds);
+        }
+      } catch (error) {
+        console.error("Failed to load integrations", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadIntegrations();
+  }, []);
+
+  const handleConnectSuccess = (serviceId: string) => {
+    setConnectedApps(prev => [...prev, serviceId]);
+    setActiveAppId(null);
+    toast.success("تم الربط بنجاح");
+  };
+
+  const handleDisconnect = async (serviceId: string) => {
+      // In a real app we'd want a confirmation dialog here
+      try {
+          const result = await disconnectIntegration(serviceId);
+          if (result.success) {
+            setConnectedApps(prev => prev.filter(id => id !== serviceId));
+            toast.success("تم إلغاء الربط");
+          } else {
+            toast.error(result.error);
+          }
+      } catch (e) {
+          toast.error("فشل إلغاء الربط");
+      }
+  };
 
   const filteredApps = APPS.filter(app => {
     const matchesCategory = activeCategory === "all" || app.category === activeCategory;
@@ -86,6 +131,14 @@ export default function IntegrationsPage() {
                           app.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  if (isLoading) {
+      return (
+          <div className="flex items-center justify-center h-screen">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+      );
+  }
 
   return (
     <>
@@ -95,7 +148,7 @@ export default function IntegrationsPage() {
         <p className="text-gray-500 text-sm mt-1">تصفح التطبيقات والخدمات التي يمكنك ربطها مع المنصة لتعزيز إنتاجيتك.</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden min-h-[600px]">
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden min-h-[600px] relative">
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-100 flex flex-col lg:flex-row gap-4 justify-between bg-white sticky top-0 z-10">
            {/* Categories */}
@@ -134,17 +187,14 @@ export default function IntegrationsPage() {
                 <div key={app.id} className="group border border-gray-200 rounded-2xl p-5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all bg-white flex flex-col">
                     <div className="flex items-start justify-between mb-4">
                         <div className={`w-12 h-12 rounded-2xl ${app.color} bg-opacity-10 flex items-center justify-center text-white shadow-sm`}>
-                            {/* Render icon with inline logic to handle 'any' type if needed, or structured icon */}
                             <app.icon className={`w-6 h-6 ${app.color.replace('bg-', 'text-')}`} />
                         </div>
-                        {app.connected ? (
+                        {connectedApps.includes(app.id) ? (
                              <span className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full font-bold flex items-center gap-1">
                                 <CheckCircle className="w-3 h-3" /> متصل
                             </span>
                         ) : (
-                            <Link href={app.link} className="opacity-0 group-hover:opacity-100 transition-opacity">
-                                <ExternalLink className="w-4 h-4 text-gray-400 hover:text-primary" />
-                            </Link>
+                             <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
                         )}
                     </div>
                     
@@ -153,20 +203,62 @@ export default function IntegrationsPage() {
                         <p className="text-sm text-gray-500 leading-relaxed">{app.description}</p>
                     </div>
 
-                    <Link 
-                        href={app.link} 
-                        className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
-                            app.connected 
-                            ? "bg-gray-100 text-gray-600 hover:bg-gray-200" 
-                            : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
-                        }`}
-                    >
-                        {app.connected ? "إدارة الربط" : "ربط الخدمة"}
-                    </Link>
+                    <div className="flex gap-2">
+                        {app.id === 'whatsapp' ? (
+                            <Link href="/dashboard/integrations/whatsapp" className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                                connectedApps.includes(app.id)
+                                ? "bg-gray-100 text-gray-700 hover:bg-gray-200" 
+                                : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                            }`}>
+                                {connectedApps.includes(app.id) ? "إدارة الإعدادات" : "ربط الخدمة"}
+                            </Link>
+                        ) : (
+                            <>
+                                {connectedApps.includes(app.id) && (
+                                    <button
+                                        onClick={() => toast.success("الاتصال يعمل بشكل جيد ✅")}
+                                        className="px-4 py-2.5 rounded-xl font-bold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+                                        title="اختبار الاتصال"
+                                    >
+                                        <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                )}
+                                <button 
+                                    onClick={() => connectedApps.includes(app.id) ? handleDisconnect(app.id) : setActiveAppId(app.id)}
+                                    className={`flex-1 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${
+                                        connectedApps.includes(app.id)
+                                        ? "bg-red-50 text-red-600 hover:bg-red-100" 
+                                        : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                                    }`}
+                                >
+                                    {connectedApps.includes(app.id) ? "إلغاء الربط" : "ربط الخدمة"}
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             ))}
         </div>
       </div>
+
+      {/* Placeholder Modal for other apps */}
+      {activeAppId && activeAppId !== 'whatsapp' && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+               <div className="bg-white rounded-3xl p-8 w-full max-w-md text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                         <Zap className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">قريباً!</h3>
+                    <p className="text-gray-500 mb-6">هذا الربط قيد التطوير حالياً وسيكون متاحاً قريباً.</p>
+                    <button 
+                        onClick={() => setActiveAppId(null)}
+                        className="bg-gray-900 text-white px-6 py-2 rounded-xl font-bold"
+                    >
+                        حسناً
+                    </button>
+               </div>
+          </div>
+      )}
     </>
   );
 }

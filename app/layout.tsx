@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
+import { ToastContainer } from "@/components/ui/toast-container";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -23,6 +24,7 @@ export default function RootLayout({
         className={`${cairo.className} antialiased font-sans`}
       >
         {children}
+        <ToastContainer />
       </body>
     </html>
   );
