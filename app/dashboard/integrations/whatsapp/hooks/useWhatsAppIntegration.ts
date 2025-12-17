@@ -13,7 +13,7 @@ import { verifyWebhookSubscription } from "@/app/actions/verify-webhook-subscrip
 import { sendTestMessage } from "@/app/actions/send-test-message";
 import type { WhatsAppFormData, WhatsAppStatus, WhatsAppLoadingStates } from "../types";
 
-const WEBHOOK_URL = "https://w-ai.sa/api/webhook/whatsapp";
+const WEBHOOK_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/whatsapp`;
 
 const generateToken = (): string => {
   const array = new Uint8Array(16);

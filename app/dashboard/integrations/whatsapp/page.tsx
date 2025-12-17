@@ -29,7 +29,7 @@ export default function WhatsAppIntegrationPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F3F4F6] pb-20 relative overflow-hidden font-sans" dir="rtl">
+        <div className="min-h-screen  pb-20 relative overflow-hidden font-sans" dir="rtl">
             <Header />
             
             {/* Ambient Background Blobs */}
