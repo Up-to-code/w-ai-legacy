@@ -146,8 +146,6 @@ export default function WhatsAppIntegrationPage() {
                                 <ConnectedView 
                                     formData={integration.formData}
                                     setFormData={integration.setFormData}
-                                    editMode={integration.editMode}
-                                    setEditMode={integration.setEditMode}
                                     handleSave={integration.saveSettings}
                                     loading={integration.isSaving}
                                     setShowDisconnectModal={integration.setShowDisconnectModal}
