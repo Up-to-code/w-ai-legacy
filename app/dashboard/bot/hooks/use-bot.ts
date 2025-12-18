@@ -13,7 +13,6 @@ import {
     testBotResponse
 } from "../actions";
 import { estimateTokens } from "@/lib/ai/bot-utils";
-import { jsonToToon, toonToJson } from "../utils/toon";
 import type { BotSetting, KnowledgeSource } from "@/types/bot";
 
 export function useBot() {
@@ -22,7 +21,7 @@ export function useBot() {
 
     // UI State
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'settings' | 'knowledge'>('settings');
+    const [activeTab, setActiveTab] = useState<'settings' | 'knowledge' | 'wui'>('settings');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // Data State
@@ -30,18 +29,16 @@ export function useBot() {
     const [sources, setSources] = useState<KnowledgeSource[]>([]);
     const [saving, setSaving] = useState(false);
 
-    // Chat State
+    // Chat Preview State
     const [chatMessages, setChatMessages] = useState<any[]>([
         { role: 'ai', text: 'مرحباً! كيف يمكنني مساعدتك في الرد على العملاء اليوم؟' }
     ]);
     const [isTyping, setIsTyping] = useState(false);
 
-    // Token Calculation Logic
+    // Token Calculation
     const totalTokens = useMemo(() => {
         let count = 0;
-        // 1. System Prompt Tokens
         count += estimateTokens(settings?.systemPrompt);
-        // 2. Knowledge Source Tokens (Only those with content)
         sources.forEach(source => {
             count += estimateTokens(source.content || source.fileUrl);
         });
@@ -58,30 +55,7 @@ export function useBot() {
                 ]);
 
                 if (settingsRes.success && settingsRes.data) {
-                    // Convert stored TOON back to JSON for UI familiarity if it's JSON-originated
-                    const settings = { ...settingsRes.data };
-                    
-                    // NEW: Unified Brain Migration Logic
-                    // If we have metadata or tone, move them into systemPrompt if they aren't there
-                    let mergedPrompt = settings.systemPrompt || '';
-                    
-                    if (settings.metadata && settings.metadata.trim()) {
-                        if (!mergedPrompt.includes(settings.metadata)) {
-                            mergedPrompt += `\n\n[معلومات إضافية]\n${settings.metadata}`;
-                        }
-                        settings.metadata = ''; // Clear it locally after merging
-                    }
-                    
-                    if (settings.tone && settings.tone !== 'friendly') {
-                        const toneLabel = settings.tone === 'formal' ? 'رسمي' : 'حماسي';
-                        if (!mergedPrompt.includes(`[أسلوب الرد: ${toneLabel}]`)) {
-                            mergedPrompt = `[أسلوب الرد: ${toneLabel}]\n${mergedPrompt}`;
-                        }
-                        // settings.tone = 'friendly'; // Reset to default after merging
-                    }
-
-                    settings.systemPrompt = mergedPrompt;
-                    setSettings(settings);
+                    setSettings(settingsRes.data);
                 }
 
                 if (sourcesRes.success && 'sources' in sourcesRes) {
@@ -89,22 +63,26 @@ export function useBot() {
                 }
             } catch (error) {
                 console.error("Initial load error:", error);
+                toast.error("فشل تحميل البيانات");
             } finally {
                 setLoading(false);
             }
         };
         loadData();
-    }, []); // Run ONLY once on mount
+    }, [toast]);
 
+    // Actions
     const handleSaveSettings = useCallback(async () => {
         if (!settings) return;
         setSaving(true);
         try {
-            // Convert JSON back to TOON before saving
             const dataToSave = { ...settings };
             
-            // We only care about name, isActive, and systemPrompt now
-            // Metadata and tone are handled within the unified brain (systemPrompt)
+            // Ensure metadata is a valid JSON string if it was modified
+            if (typeof dataToSave.metadata === 'object' && dataToSave.metadata !== null) {
+                dataToSave.metadata = JSON.stringify(dataToSave.metadata);
+            }
+
             const result = await updateBotSettings(dataToSave);
             if (result.success) {
                 toast.success("تم حفظ الإعدادات بنجاح");
@@ -151,12 +129,7 @@ export function useBot() {
             });
 
             if (result.success && result.data) {
-                // For UI state, keep the original content if it was JSON
-                const newSource = { ...result.data };
-                if (data.type === 'text') {
-                    newSource.content = data.content;
-                }
-                setSources(prev => [newSource, ...prev]);
+                setSources(prev => [result.data!, ...prev]);
                 toast.success("تمت إضافة مصدر المعرفة");
             } else {
                 toast.error(result.error);
@@ -192,7 +165,6 @@ export function useBot() {
         setIsTyping(true);
 
         try {
-            // Include last 10 messages for context (excluding the very first welcome message if preferred)
             const contextHistory = chatMessages
                 .filter(m => m.text !== 'مرحباً! كيف يمكنني مساعدتك في الرد على العملاء اليوم؟')
                 .slice(-10);
@@ -213,7 +185,7 @@ export function useBot() {
         } finally {
             setIsTyping(false);
         }
-    }, [toast]);
+    }, [chatMessages, toast]);
 
     return {
         // State

@@ -55,6 +55,28 @@ export class BotService {
   }
 
   /**
+   * Get bot settings by bot UUID (Public API)
+   */
+  async getSettingsById(botId: string): Promise<BotSettingType | null> {
+    const [settings] = await db
+      .select()
+      .from(botSetting)
+      .where(eq(botSetting.id, botId))
+      .limit(1);
+
+    if (!settings) return null;
+
+    if (settings.systemPrompt) {
+      const decoded = toonToJson(settings.systemPrompt);
+      settings.systemPrompt = (typeof decoded === 'object' && decoded !== null && 'prompt' in decoded)
+        ? decoded.prompt
+        : (typeof decoded === 'string' ? decoded : settings.systemPrompt);
+    }
+
+    return settings as BotSettingType;
+  }
+
+  /**
    * Update bot settings
    */
   async updateSettings(userId: string, data: UpdateBotSettingData): Promise<BotSettingType> {
@@ -218,6 +240,66 @@ export class BotService {
       response: aiResponse.content,
       took,
     };
+  }
+
+  /**
+   * Stream bot response (Public API)
+   */
+  async *streamResponse(botId: string, message: string, history?: { role: 'user' | 'ai'; text: string }[]) {
+    const settings = await this.getSettingsById(botId);
+    if (!settings || !settings.isActive) {
+      throw new Error("البوت غير موجود أو معطل.");
+    }
+
+    const sources = await db
+      .select({
+        name: knowledgeSource.name,
+        type: knowledgeSource.type,
+        content: knowledgeSource.content,
+        fileUrl: knowledgeSource.fileUrl
+      })
+      .from(knowledgeSource)
+      .where(eq(knowledgeSource.userId, settings.userId));
+
+    const knowledgeItems = sources.map(s => ({
+      name: s.name,
+      type: s.type,
+      content: (s.type === 'text' && s.content) ? toonToJson(s.content) : (s.content || s.fileUrl)
+    }));
+
+    const systemPrompt = buildBotSystemPrompt(
+      settings.systemPrompt,
+      settings.tone,
+      knowledgeItems
+    );
+
+    const apiKey = settings.aiApiKey || process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+      throw new Error("مفتاح API غير متوفر.");
+    }
+
+    const aiModel = new AIModel({
+      apiKey: apiKey,
+      provider: settings.aiProvider || 'openrouter',
+      model: settings.aiModel || 'z-ai/glm-4.5-air:free',
+      systemPrompt: systemPrompt,
+    });
+
+    if (history && history.length > 0) {
+      history.forEach(msg => {
+        if (msg.role === 'user') {
+          aiModel.addUserMessage(msg.text);
+        } else {
+          aiModel.addAssistantMessage(msg.text);
+        }
+      });
+    }
+
+    aiModel.addUserMessage(message);
+
+    for await (const chunk of aiModel.stream()) {
+      yield chunk;
+    }
   }
 
   /**

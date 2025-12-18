@@ -294,4 +294,35 @@ export class AIModel {
       throw error;
     }
   }
+
+  async *stream(options?: RequestOptions) {
+    const messages = this.buildMessages();
+    const config = {
+        model: options?.model || this.config.model,
+        temperature: options?.temperature ?? this.config.temperature,
+        maxTokens: options?.maxTokens || this.config.maxTokens,
+    };
+
+    this.logger.log('STREAM', '🌊 Starting stream', { model: config.model });
+
+    try {
+      const completion = await this.client.chat.completions.create({
+        model: config.model,
+        messages: messages as any,
+        temperature: config.temperature,
+        max_tokens: config.maxTokens,
+        stream: true,
+      });
+
+      for await (const chunk of completion) {
+        const content = chunk.choices[0]?.delta?.content || '';
+        if (content) {
+          yield content;
+        }
+      }
+    } catch (error) {
+      this.logger.log('ERROR', '❌ Stream failed', error);
+      throw error;
+    }
+  }
 }

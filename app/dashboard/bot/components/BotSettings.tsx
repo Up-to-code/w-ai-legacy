@@ -83,6 +83,17 @@ export default function BotSettings({ settings, setSettings, onSave, onReset, sa
                                 </button>
                             </div>
 
+                            <div className="relative z-10">
+                                <label className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-2.5 block px-1">اسم البوت (Display Name)</label>
+                                <input
+                                    type="text"
+                                    value={settings.name || ''}
+                                    onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                                    className="w-full bg-white/50 border border-gray-100 rounded-2xl px-6 py-4 text-lg font-bold focus:bg-white focus:ring-[12px] focus:ring-primary/5 transition-all outline-none placeholder:text-gray-300"
+                                    placeholder="مثال: المساعد الذكي"
+                                />
+                            </div>
+
                             <textarea
                                 value={settings.systemPrompt || ''}
                                 onChange={(e) => setSettings({ ...settings, systemPrompt: e.target.value })}

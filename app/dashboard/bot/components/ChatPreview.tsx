@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, RefreshCw, Send, Loader2 } from "lucide-react";
+import { Bot, RefreshCw, Send, Loader2, MoreHorizontal, CheckCheck, Smile, Paperclip, Mic } from "lucide-react";
 import { useRef, useEffect } from "react";
 
 interface ChatMessage {
@@ -13,9 +13,10 @@ interface ChatPreviewProps {
     onSendMessage: (text: string) => void;
     onReset: () => void;
     isTyping: boolean;
+    botName?: string;
 }
 
-export default function ChatPreview({ messages, onSendMessage, onReset, isTyping }: ChatPreviewProps) {
+export default function ChatPreview({ messages, onSendMessage, onReset, isTyping, botName = "المساعد الذكي" }: ChatPreviewProps) {
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -36,109 +37,147 @@ export default function ChatPreview({ messages, onSendMessage, onReset, isTyping
     };
 
     return (
-        <div className="bg-white rounded-[2rem] border border-gray-100 overflow-hidden flex flex-col h-full shadow-2xl shadow-primary/5">
-            {/* Header */}
-            <div className="p-5 border-b border-gray-50 flex items-center justify-between bg-white/50 backdrop-blur-md sticky top-0 z-20">
+        <div className="bg-[#E5DDD5] rounded-[2.5rem] border border-gray-100 overflow-hidden flex flex-col h-full shadow-2xl shadow-primary/5 select-none relative" dir="rtl">
+            {/* Header - Fixed like WhatsApp */}
+            <div className="px-6 py-4 border-b border-black/5 flex items-center justify-between bg-[#F0F2F5] sticky top-0 z-20">
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center">
-                            <Bot className="w-5 h-5 text-primary" />
+                        <div className="w-11 h-11 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden border border-black/5">
+                            <Bot className="w-6 h-6 text-white" />
                         </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                        <div className="absolute bottom-0 left-0 w-3 h-3 bg-[#25D366] border-2 border-[#F0F2F5] rounded-full"></div>
                     </div>
                     <div>
-                        <h3 className="font-bold text-sm text-gray-900">محاكاة المحادثة</h3>
-                        <p className="text-[10px] text-green-600 font-medium">نشط الآن</p>
+                        <h3 className="font-bold text-[15px] text-gray-800 tracking-tight">{botName}</h3>
+                        <p className="text-[11px] text-gray-500 font-medium">متصل الآن</p>
                     </div>
                 </div>
-                <button
-                    onClick={onReset}
-                    className="text-gray-400 hover:text-primary p-2 rounded-xl hover:bg-primary/5 transition-all group"
-                    title="تفريغ المحادثة"
-                >
-                    <RefreshCw className="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={onReset}
+                        className="text-gray-500 hover:text-primary p-2 rounded-full hover:bg-black/5 transition-all group"
+                        title="تفريغ المحادثة"
+                    >
+                        <RefreshCw className="w-5 h-5 group-hover:rotate-180 transition-transform duration-500" />
+                    </button>
+                    <button className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-black/5 transition-all">
+                        <MoreHorizontal className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
-            {/* Chat Area */}
+            {/* Chat Area - WhatsApp Background Pattern */}
             <div
                 ref={chatContainerRef}
-                className="flex-1 overflow-y-auto p-5 space-y-4 bg-[#f8f9fa] relative scroll-smooth selection:bg-primary/10"
+                className="flex-1 overflow-y-auto p-6 space-y-4 relative scroll-smooth selection:bg-primary/10 custom-scrollbar"
                 style={{
                     backgroundImage: `url("https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png")`,
                     backgroundSize: '400px',
-                    backgroundRepeat: 'repeat'
+                    backgroundColor: '#E5DDD5'
                 }}
             >
+                {/* Date Separator */}
+                <div className="flex justify-center my-4">
+                    <span className="bg-[#D9FDD3]/80 backdrop-blur-sm px-4 py-1.5 rounded-xl text-[11px] font-bold text-gray-600 shadow-sm border border-black/5">
+                        اليوم
+                    </span>
+                </div>
+
                 {messages.length === 0 && !isTyping && (
-                    <div className="flex flex-col items-center justify-center h-full text-center p-8 animate-in fade-in zoom-in duration-500">
-                        <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center shadow-sm mb-4">
-                            <Bot className="w-8 h-8 text-gray-200" />
-                        </div>
-                        <h4 className="font-bold text-gray-400 text-sm">ابدأ تجربة المساعد</h4>
-                        <p className="text-xs text-gray-300 mt-2 leading-relaxed">
-                            أرسل رسالة لاختبار ردود البوت بناءً على الإعدادات والمعلومات الحالية.
-                        </p>
+                    <div className="flex flex-col items-center justify-center mt-20 text-center px-10 opacity-30">
+                        <Bot className="w-16 h-16 text-gray-400 mb-4" />
+                        <p className="text-sm font-bold text-gray-600">أرسل رسالة لبدء المحادثة</p>
                     </div>
                 )}
 
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}
-                        className={`flex gap-3 animate-in fade-in slide-in-from-bottom-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
+                        className={`flex mb-2 ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}
                     >
-                        {msg.role === 'ai' && (
-                            <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center shrink-0 shadow-sm self-end mb-1">
-                                <Bot className="w-4 h-4 text-primary" />
-                            </div>
-                        )}
-                        <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm relative ${msg.role === 'user'
-                                ? 'bg-primary text-white rounded-br-none'
-                                : 'bg-white text-gray-800 rounded-bl-none border border-gray-50'
+                        <div className={`relative max-w-[85%] px-4 py-2.5 rounded-2xl text-[14px] shadow-sm ${msg.role === 'user'
+                            ? 'bg-[#105D3B] text-white rounded-tr-none'
+                            : 'bg-white text-gray-800 rounded-tl-none'
                             }`}>
-                            {msg.text}
-                            <span className={`absolute bottom-1 ${msg.role === 'user' ? 'left-2 text-white/50' : 'right-2 text-gray-300'} text-[9px]`}>
-                                {new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
-                            </span>
+
+                            {/* Message Text */}
+                            <p className="font-medium leading-relaxed">{msg.text}</p>
+
+                            {/* Metadata Footer */}
+                            <div className={`flex items-center gap-1 mt-1 justify-end ${msg.role === 'user' ? 'text-white/70' : 'text-gray-400'}`}>
+                                <span className="text-[10px] font-medium">
+                                    {new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                                {msg.role === 'user' && <CheckCheck className="w-3.5 h-3.5" />}
+                            </div>
+
+                            {/* Tail SVG - Refined for WhatsApp look */}
+                            <div className={`absolute top-0 w-3 h-3 ${msg.role === 'user' ? '-right-2.5' : '-left-2.5'}`}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    {msg.role === 'user' ? (
+                                        <path d="M0 0H12V12L0 0Z" fill="#105D3B" />
+                                    ) : (
+                                        <path d="M12 0H0V12L12 0Z" fill="white" />
+                                    )}
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 ))}
 
                 {isTyping && (
-                    <div className="flex gap-3 animate-pulse">
-                        <div className="w-8 h-8 rounded-xl bg-white border border-gray-100 flex items-center justify-center shrink-0 shadow-sm self-end mb-1">
-                            <Bot className="w-4 h-4 text-primary" />
-                        </div>
-                        <div className="bg-white px-4 py-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-1.5 border border-gray-50">
-                            <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                            <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                            <div className="w-1.5 h-1.5 bg-primary/40 rounded-full animate-bounce"></div>
+                    <div className="flex justify-end mb-4 animate-in fade-in slide-in-from-left-2 transition-all">
+                        <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-none shadow-sm flex items-center gap-1.5 border border-gray-100 relative">
+                            <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-1.5 h-1.5 bg-gray-300 rounded-full animate-bounce"></div>
+                            {/* Tail for typing indicator */}
+                            <div className="absolute top-0 -left-2.5 w-3 h-3">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 0H0V12L12 0Z" fill="white" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Input Area */}
-            <div className="p-4 bg-white border-t border-gray-50">
-                <form onSubmit={handleSubmit} className="relative flex items-center gap-3">
+            {/* Input Area - WhatsApp Design */}
+            <div className="px-4 py-3 bg-[#F0F2F5] flex items-center gap-2">
+                <div className="flex items-center gap-2 text-gray-500">
+                    <button type="button" className="p-2 hover:bg-black/5 rounded-full transition-all">
+                        <Smile className="w-6 h-6" />
+                    </button>
+                    <button type="button" className="p-2 hover:bg-black/5 rounded-full transition-all">
+                        <Paperclip className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex-1 flex items-center gap-2">
                     <input
                         ref={inputRef}
                         type="text"
-                        placeholder="اسأل المساعد شيئاً..."
+                        placeholder="اكتب رسالة..."
                         disabled={isTyping}
-                        className="flex-1 pr-5 pl-12 py-3.5 bg-gray-50/50 rounded-2xl border border-gray-100 focus:outline-none focus:border-primary/30 focus:bg-white text-sm transition-all disabled:opacity-50"
+                        className="flex-1 px-4 py-2.5 bg-white rounded-full border-none focus:outline-none text-[15px] shadow-sm disabled:opacity-50"
                     />
+
                     <button
                         type="submit"
                         disabled={isTyping}
-                        className="absolute left-1.5 p-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 transition-all active:scale-90 shadow-lg shadow-primary/20 disabled:opacity-50 disabled:active:scale-100"
+                        className={`p-3 rounded-full transition-all active:scale-90 flex items-center justify-center shadow-md ${isTyping || !inputRef.current?.value ? 'bg-gray-400' : 'bg-[#105D3B]'}`}
                     >
-                        {isTyping ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Send className="w-4 h-4 -rotate-45 ml-0.5" />}
+                        {isTyping ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-white" />
+                        ) : (
+                            <Send className="w-5 h-5 rotate-[-135deg] text-white" />
+                        )}
                     </button>
                 </form>
-                <p className="text-[10px] text-gray-300 text-center mt-3">
-                    هذه ميزة تجريبية للتحقق من دقة الردود قبل التفعيل للعملاء.
-                </p>
+
+                <button type="button" className="p-2 text-gray-500 hover:bg-black/5 rounded-full transition-all">
+                    <Mic className="w-6 h-6" />
+                </button>
             </div>
         </div>
     );

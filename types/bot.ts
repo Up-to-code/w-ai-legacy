@@ -40,6 +40,7 @@ export interface UpdateBotSettingData {
   aiApiKey?: string;
   aiModel?: string;
   aiProvider?: string;
+  metadata?: string;
 }
 
 export interface KnowledgeSource {
