@@ -1,0 +1,61 @@
+﻿--- FINAL DB VERIFICATION ---
+Template 'language' column: [
+  {
+    "column_name": "language",
+    "data_type": "text"
+  }
+]
+Template query result: [
+  {
+    "id": "b7420a88-79c6-4ff0-b4bc-a0b12a14466a",
+    "name": "otp_verification_ar",
+    "language": "ar"
+  }
+]
+BotSetting columns: [
+  {
+    "column_name": "isActive",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "createdAt",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "updatedAt",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "tone",
+    "data_type": "text"
+  },
+  {
+    "column_name": "systemPrompt",
+    "data_type": "text"
+  },
+  {
+    "column_name": "aiApiKey",
+    "data_type": "text"
+  },
+  {
+    "column_name": "aiModel",
+    "data_type": "text"
+  },
+  {
+    "column_name": "id",
+    "data_type": "text"
+  },
+  {
+    "column_name": "aiProvider",
+    "data_type": "text"
+  },
+  {
+    "column_name": "userId",
+    "data_type": "text"
+  },
+  {
+    "column_name": "name",
+    "data_type": "text"
+  }
+]
+Γ£à Verification complete!

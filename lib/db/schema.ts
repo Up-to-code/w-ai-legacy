@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, boolean, index, integer } from "drizzle-orm/pg-core";
 
 // User table
 export const user = pgTable("user", {
@@ -75,7 +75,7 @@ export const contact = pgTable("contact", {
   phone: text("phone"),
   email: text("email"),
   tags: text("tags").array(), // Array of tag IDs
-  orderCount: text("orderCount").default("0"),
+  orderCount: integer("orderCount").default(0),
   lastActivityAt: timestamp("lastActivityAt"),
   notes: text("notes"),
   metadata: text("metadata"), // JSON string for additional data
@@ -99,9 +99,9 @@ export const campaign = pgTable("campaign", {
   // Audience configuration
   audienceType: text("audienceType").default("all"), // all, tags, count, recent
   includedTags: text("includedTags").array(), // Array of tag IDs if audienceType is tags
-  contactLimit: text("contactLimit"), // For "count" type - send to first N contacts
-  recentDays: text("recentDays"), // For "recent" type - contacts from last X days
-  targetAudienceCount: text("targetAudienceCount").default("0"),
+  contactLimit: integer("contactLimit"), // For "count" type - send to first N contacts
+  recentDays: integer("recentDays"), // For "recent" type - contacts from last X days
+  targetAudienceCount: integer("targetAudienceCount").default(0),
   
   // Message configuration
   messageType: text("messageType").default("text"), // text, image, template
@@ -109,8 +109,8 @@ export const campaign = pgTable("campaign", {
   templateId: text("templateId").references(() => template.id, { onDelete: "set null" }),
 
   // Stats
-  deliveredCount: text("deliveredCount").default("0"),
-  readCount: text("readCount").default("0"),
+  deliveredCount: integer("deliveredCount").default(0),
+  readCount: integer("readCount").default(0),
   
   // Timing
   scheduledAt: timestamp("scheduledAt"),
@@ -155,7 +155,8 @@ export const template = pgTable("template", {
   name: text("name").notNull(),
   content: text("content").notNull(),
   category: text("category").default("general"), // welcome, general, marketing, support
-  usageCount: text("usageCount").default("0"),
+  language: text("language").default("ar"),
+  usageCount: integer("usageCount").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
@@ -174,6 +175,11 @@ export const botSetting = pgTable("bot_setting", {
   tone: text("tone").default("friendly"), // formal, friendly, enthusiastic
   systemPrompt: text("systemPrompt").default("أنت مساعد ذكي ومفيد لشركة تقنية. يجب أن تكون ردودك قصيرة، مهذبة، وباللغة العربية."),
   isActive: boolean("isActive").default(true),
+  aiApiKey: text("aiApiKey"),
+  aiModel: text("aiModel").default("z-ai/glm-4.5-air:free"),
+  aiProvider: text("aiProvider").default("openrouter"), // openrouter, openai, anthropic
+  metadata: text("metadata"), // JSON string for extended config
+  lastTunedAt: timestamp("lastTunedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
@@ -197,6 +203,23 @@ export const knowledgeSource = pgTable("knowledge_source", {
 }, (table) => ({
   userIdIdx: index("knowledge_source_userId_idx").on(table.userId),
   typeIdx: index("knowledge_source_type_idx").on(table.type),
+}));
+
+// Prompt History table for "Solid Code" traceability
+export const botPromptHistory = pgTable("bot_prompt_history", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  botSettingId: text("botSettingId")
+    .notNull()
+    .references(() => botSetting.id, { onDelete: "cascade" }),
+  userId: text("userId").notNull(),
+  prompt: text("prompt").notNull(),
+  tone: text("tone"),
+  name: text("name"),
+  changeSummary: text("changeSummary"), // Human readable summary of what changed
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (table) => ({
+  botSettingIdx: index("prompt_history_botSetting_idx").on(table.botSettingId),
+  userIdIdx: index("prompt_history_userId_idx").on(table.userId),
 }));
 
 // Integration table
@@ -227,7 +250,7 @@ export const tag = pgTable("tag", {
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   color: text("color").default("blue"), // blue, green, red, yellow, purple, etc.
-  contactCount: text("contactCount").default("0"),
+  contactCount: integer("contactCount").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (table) => ({
@@ -244,7 +267,6 @@ export const schema = {
   message,
   template,
   botSetting,
-  knowledgeSource,
-  integration,
   tag,
+  botPromptHistory,
 };

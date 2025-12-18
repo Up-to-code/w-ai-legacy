@@ -10,7 +10,8 @@ export interface Template {
   name: string;
   content: string;
   category?: string;
-  usageCount?: string;
+  language?: string;
+  usageCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -19,12 +20,14 @@ export interface CreateTemplateData {
   name: string;
   content: string;
   category?: string;
+  language?: string;
 }
 
 export interface UpdateTemplateData {
   name?: string;
   content?: string;
   category?: string;
+  language?: string;
 }
 
 export interface TemplateListParams {

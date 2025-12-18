@@ -3,8 +3,9 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { template } from "@/lib/db/schema";
+import { template, integration } from "@/lib/db/schema";
 import { eq, and, ilike, desc, asc, sql } from "drizzle-orm";
+import { type WhatsAppCredentials, fetchWhatsAppTemplates } from "@/lib/whatsapp";
 import type { 
   Template, 
   CreateTemplateData, 
@@ -158,7 +159,8 @@ export async function createTemplate(data: CreateTemplateData) {
         name: data.name,
         content: data.content,
         category: data.category || "general",
-        usageCount: "0",
+        language: data.language || "ar",
+        usageCount: 0,
       })
       .returning();
 
@@ -281,7 +283,8 @@ export async function duplicateTemplate(id: string) {
         name: `${existingTemplate.name} (نسخة)`,
         content: existingTemplate.content,
         category: existingTemplate.category,
-        usageCount: "0",
+        language: existingTemplate.language,
+        usageCount: 0,
       })
       .returning();
 
@@ -324,7 +327,7 @@ export async function incrementUsage(id: string) {
     const [updatedTemplate] = await db
       .update(template)
       .set({
-        usageCount: String(currentCount + 1),
+        usageCount: currentCount + 1,
         updatedAt: new Date(),
       })
       .where(eq(template.id, id))
@@ -342,3 +345,97 @@ export async function incrementUsage(id: string) {
     };
   }
 }
+
+/**
+ * Sync templates from Meta WhatsApp Business API
+ */
+export async function syncMetaTemplates() {
+  try {
+    const user = await getAuthUser();
+
+    // 1. Get WhatsApp Integration credentials
+    const [waIntegration] = await db
+      .select()
+      .from(integration)
+      .where(and(eq(integration.userId, user.id), eq(integration.serviceId, "whatsapp")))
+      .limit(1);
+
+    if (!waIntegration || waIntegration.status !== "connected" || !waIntegration.credentials) {
+      return {
+        success: false,
+        error: "يرجى ربط WhatsApp أولاً وتأكيد الاتصال",
+      };
+    }
+
+    const credentials = JSON.parse(waIntegration.credentials);
+    const waCredentials: WhatsAppCredentials = {
+      accessToken: credentials.accessToken,
+      phoneNumberId: credentials.phoneNumberId,
+      wabaId: credentials.businessAccountId, // We store it as businessAccountId in the UI
+    };
+
+    // 2. Fetch templates from Meta
+    const metaResult = await fetchWhatsAppTemplates(waCredentials);
+    if (!metaResult.success || !metaResult.data) {
+      return {
+        success: false,
+        error: metaResult.error || "فشل جلب القوالب من Meta",
+      };
+    }
+
+    // 3. Sync with local database
+    const metaTemplates = metaResult.data;
+    let syncedCount = 0;
+
+    for (const metaTpl of metaTemplates) {
+      // Find content - usually in a BODY component
+      const bodyComponent = metaTpl.components.find((c: any) => c.type === "BODY");
+      const content = bodyComponent?.text || "";
+
+      if (!content) continue; // Skip if no content
+
+      // Check if template already exists by name
+      const [existing] = await db
+        .select()
+        .from(template)
+        .where(and(eq(template.userId, user.id), eq(template.name, metaTpl.name)))
+        .limit(1);
+
+      if (existing) {
+        // Update existing template
+        await db
+          .update(template)
+          .set({
+            content,
+            category: (metaTpl.category?.toLowerCase() as any) || "general",
+            language: metaTpl.language || "ar",
+            updatedAt: new Date(),
+          })
+          .where(eq(template.id, existing.id));
+      } else {
+        // Create new template
+        await db.insert(template).values({
+          userId: user.id,
+          name: metaTpl.name,
+          content,
+          category: (metaTpl.category?.toLowerCase() as any) || "general",
+          language: metaTpl.language || "ar",
+          usageCount: 0,
+        });
+      }
+      syncedCount++;
+    }
+
+    return {
+      success: true,
+      message: `تمت مزامنة ${syncedCount} قالب من Meta بنجاح`,
+    };
+  } catch (error: any) {
+    console.error("Sync Meta templates error:", error);
+    return {
+      success: false,
+      error: error.message || "حدث خطأ أثناء مزامنة القوالب",
+    };
+  }
+}
+

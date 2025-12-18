@@ -250,17 +250,21 @@ export function ConnectedView({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
             <CopyableInput
-              label="Webhook URL"
+              label="رابط الويب هوك الخاص بك"
               value={webhookUrl}
               onCopy={() => handleCopy(webhookUrl)}
             />
             <CopyableInput
-              label="Verify Token"
+              label="رمز التحقق (Verify Token)"
               value={formData.verifyToken}
               onCopy={() => handleCopy(formData.verifyToken)}
               onRefresh={refreshVerifyToken}
               loading={loading}
             />
+          </div>
+
+          <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
+            💡 يتم توجيه الرسائل من Meta إلى هذا الرابط، ويقوم النظام بمطابقتها تلقائياً مع حسابك.
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t border-gray-100">

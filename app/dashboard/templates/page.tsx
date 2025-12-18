@@ -1,8 +1,8 @@
 "use client";
 
-import { Copy, Plus, Edit2, Trash2, Search, X } from "lucide-react";
+import { Copy, Plus, Edit2, Trash2, Search, X, RefreshCw } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import { getTemplates, createTemplate, updateTemplate, deleteTemplate, duplicateTemplate } from "@/app/actions/templates";
+import { getTemplates, createTemplate, updateTemplate, deleteTemplate, duplicateTemplate, syncMetaTemplates } from "@/app/actions/templates";
 import { useToast } from "@/lib/hooks/use-toast";
 import { useConfirmDialog, ConfirmDialog } from "@/components/ui/confirm-dialog";
 import type { Template, CreateTemplateData, TemplateCategory } from "@/types/template";
@@ -18,6 +18,7 @@ const CATEGORIES = [
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -155,6 +156,23 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleSyncMeta = async () => {
+    setSyncing(true);
+    try {
+      const result = await syncMetaTemplates();
+      if (result.success) {
+        toast.success(result.message || "تمت المزامنة بنجاح");
+        fetchTemplates();
+      } else {
+        toast.error(result.error || "حدث خطأ أثناء المزامنة");
+      }
+    } catch (error: any) {
+      toast.error("حدث خطأ غير متوقع أثناء الاتصال بـ Meta");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const getCategoryLabel = (category?: string) => {
     const cat = CATEGORIES.find((c) => c.value === category);
     return cat?.label || "عام";
@@ -167,12 +185,22 @@ export default function TemplatesPage() {
           <h1 className="text-3xl font-bold mb-2">قوالب الرسائل</h1>
           <p className="text-gray-500">إدارة القوالب الجاهزة للرد الآلي. ({templates.length} قالب)</p>
         </div>
-        <button
-          onClick={handleOpenModal}
-          className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all"
-        >
-          <Plus className="w-4 h-4" /> قالب جديد
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSyncMeta}
+            disabled={syncing}
+            className="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-gray-50 transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`} />
+            مزامنة من Meta
+          </button>
+          <button
+            onClick={handleOpenModal}
+            className="bg-primary text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all"
+          >
+            <Plus className="w-4 h-4" /> قالب جديد
+          </button>
+        </div>
       </div>
 
       {/* Filters */}

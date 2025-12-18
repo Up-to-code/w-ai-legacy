@@ -9,7 +9,7 @@ export interface Tag {
   userId: string;
   name: string;
   color?: string;
-  contactCount?: string;
+  contactCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -23,11 +23,16 @@ export async function getOrCreateContact(params: CreateContactParams) {
         .limit(1);
 
     if (existingContact) {
-        // Optional: Update metadata if provided? 
-        // For now, simpler to just return. The user said "save... dataat", 
-        // usually implies saving new data. 
-        // Let's create a logic to merge metadata if needed, but for "new cumers" logic,
-        // we primarily care about creation. 
+        // Update last activity
+        await db
+            .update(contact)
+            .set({ 
+                lastActivityAt: new Date(),
+                // Update name if it was just the phone number and we have a proper name now
+                ...(existingContact.name === existingContact.phone && name ? { name } : {})
+            })
+            .where(eq(contact.id, existingContact.id));
+        
         return existingContact;
     }
 
@@ -37,9 +42,10 @@ export async function getOrCreateContact(params: CreateContactParams) {
         .values({
             userId,
             phone,
-            name: name || phone, // Fallback to phone if name missing
+            name: name || phone,
             tags: ["whatsapp_inbound"],
-            orderCount: "0",
+            orderCount: 0,
+            lastActivityAt: new Date(),
             notes: "Created automatically from incoming WhatsApp message",
             metadata: metadata ? JSON.stringify(metadata) : null,
         })

@@ -12,8 +12,24 @@ export interface BotSetting {
   tone?: BotTone;
   systemPrompt?: string;
   isActive?: boolean;
+  aiApiKey?: string;
+  aiModel?: string;
+  aiProvider?: string;
+  metadata?: string;
+  lastTunedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface BotPromptHistory {
+  id: string;
+  botSettingId: string;
+  userId: string;
+  prompt: string;
+  tone?: string;
+  name?: string;
+  changeSummary?: string;
+  createdAt: Date;
 }
 
 export interface UpdateBotSettingData {
@@ -21,6 +37,9 @@ export interface UpdateBotSettingData {
   tone?: BotTone;
   systemPrompt?: string;
   isActive?: boolean;
+  aiApiKey?: string;
+  aiModel?: string;
+  aiProvider?: string;
 }
 
 export interface KnowledgeSource {
@@ -47,6 +66,7 @@ export interface CreateKnowledgeSourceData {
 
 export interface UpdateKnowledgeSourceData {
   name?: string;
+  type?: KnowledgeSourceType;
   content?: string;
   metadata?: string;
 }
@@ -62,6 +82,7 @@ export interface KnowledgeSourceListParams {
 
 export interface BotTestRequest {
   message: string;
+  history?: { role: 'user' | 'ai'; text: string }[];
 }
 
 export interface BotTestResponse {

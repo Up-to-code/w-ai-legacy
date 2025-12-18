@@ -9,7 +9,7 @@ export interface Contact {
   phone?: string | null;
   email?: string | null;
   tags?: string[] | null; // Array of tag IDs
-  orderCount?: string;
+  orderCount?: number;
   lastActivityAt?: Date | null;
   notes?: string | null;
   metadata?: string | null; // JSON string
@@ -30,7 +30,7 @@ export interface UpdateContactData {
   phone?: string;
   email?: string;
   tags?: string[];
-  orderCount?: string;
+  orderCount?: number;
   lastActivityAt?: Date;
   notes?: string;
 }

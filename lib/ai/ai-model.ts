@@ -107,7 +107,7 @@ export class ProviderRegistry {
   private static providers: Map<string, AIProviderConfig> = new Map([
     ['openrouter', {
       name: 'OpenRouter',
-      baseURL: 'https://openrouter.ai/api/v1',
+      baseURL: 'https://openrouter.ai/api/v1/',
       defaultModel: 'z-ai/glm-4.5-air:free',
       headers: {
         'HTTP-Referer': 'https://replyx.ai', // Replace with actual app URL if needed
@@ -154,26 +154,41 @@ export class AIModel {
   private logger: Logger;
 
   constructor(config: AIModelConfig, logger?: Logger) {
-    if (!config.apiKey?.trim()) {
-      throw new Error('API key is required and cannot be empty');
-    }
-
     this.logger = logger || new DefaultLogger();
     this.logger.enable(!!config.debug);
 
-    const providerId = config.provider || 'openrouter';
+    let providerId = config.provider || 'openrouter';
+    let apiKey = config.apiKey || (providerId === 'openrouter' ? process.env.OPENROUTER_API_KEY : undefined);
+
+    // Safety check: If the key is an OpenRouter key but provider is something else, fix it.
+    if (apiKey?.startsWith('sk-or-v1')) {
+        providerId = 'openrouter';
+    }
+
     const provider = ProviderRegistry.getProvider(providerId);
 
     if (!provider) {
-      throw new Error(`Provider '${providerId}' not found.`);
+        throw new Error(`Provider '${providerId}' not found.`);
     }
 
     this.provider = provider;
 
+    if (!apiKey && providerId === 'openrouter') {
+        apiKey = process.env.OPENROUTER_API_KEY;
+    }
+    
+    if (!apiKey) {
+      throw new Error(`API key for ${provider.name} is required.`);
+    }
+
     this.client = new OpenAI({ 
-      apiKey: config.apiKey,
+      apiKey: apiKey,
       baseURL: provider.baseURL,
-      defaultHeaders: provider.headers,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://replyx.ai',
+        'X-Title': 'ReplyX AI',
+        ...provider.headers,
+      },
       timeout: config.timeout || 30000,
     });
 
@@ -251,15 +266,13 @@ export class AIModel {
     this.logger.log('REQUEST', '📤 Sending request', { model: config.model });
 
     try {
-      const completion = await this.makeRequest(() => 
-        this.client.chat.completions.create({
-          model: config.model,
-          messages: messages as any,
-          temperature: config.temperature,
-          max_tokens: config.maxTokens,
-          stream: false,
-        })
-      );
+      const completion = await this.client.chat.completions.create({
+        model: config.model,
+        messages: messages as any,
+        temperature: config.temperature,
+        max_tokens: config.maxTokens,
+        stream: false,
+      });
 
       const content = completion.choices[0]?.message?.content || '';
 
@@ -272,7 +285,7 @@ export class AIModel {
           completionTokens: completion.usage?.completion_tokens || 0,
           totalTokens: completion.usage?.total_tokens || 0,
         },
-        model: completion.model,
+        model: completion.model || config.model,
         finishReason: completion.choices[0]?.finish_reason,
       };
 

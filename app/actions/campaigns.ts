@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { campaign, message, integration, contact } from "@/lib/db/schema";
 import { eq, and, ilike, desc, asc, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import type { 
   Campaign, 
   CreateCampaignData, 
@@ -85,15 +86,15 @@ export async function getCampaigns(params: CampaignListParams = {}) {
       ...camp,
       stats: {
         totalSent: 0,
-        totalDelivered: parseInt(camp.deliveredCount || "0"),
-        totalRead: parseInt(camp.readCount || "0"),
+        totalDelivered: camp.deliveredCount || 0,
+        totalRead: camp.readCount || 0,
         totalFailed: 0,
         deliveryRate: 0,
         readRate: 0,
         // Helper properties for UI
-        delivered: parseInt(camp.deliveredCount || "0"),
-        read: parseInt(camp.readCount || "0"),
-        total: parseInt(camp.targetAudienceCount || "0")
+        delivered: camp.deliveredCount || 0,
+        read: camp.readCount || 0,
+        total: camp.targetAudienceCount || 0
       }
     }));
 
@@ -150,6 +151,47 @@ export async function getCampaign(id: string) {
 }
 
 /**
+ * Get messages associated with a campaign
+ */
+export async function getCampaignMessages(campaignId: string) {
+  try {
+    const user = await getAuthUser();
+
+    const messages = await db
+      .select({
+        id: message.id,
+        content: message.content,
+        status: message.status,
+        direction: message.direction,
+        sentAt: message.sentAt,
+        readAt: message.readAt,
+        createdAt: message.createdAt,
+        contact: {
+          id: contact.id,
+          name: contact.name,
+          phone: contact.phone,
+        }
+      })
+      .from(message)
+      .leftJoin(contact, eq(message.contactId, contact.id))
+      .where(and(eq(message.campaignId, campaignId), eq(message.userId, user.id)))
+      .orderBy(desc(message.createdAt));
+
+    return {
+      success: true,
+      data: messages,
+    };
+  } catch (error: any) {
+    console.error("Get campaign messages error:", error);
+    return {
+      success: false,
+      error: error.message || "حدث خطأ أثناء جلب رسائل الحملة",
+    };
+  }
+}
+
+
+/**
  * Create campaign
  */
 export async function createCampaign(data: CreateCampaignData) {
@@ -168,15 +210,17 @@ export async function createCampaign(data: CreateCampaignData) {
         status: data.status || "draft",
         audienceType: data.audienceType || "all",
         includedTags: data.includedTags || [],
-        contactLimit: data.contactLimit ? String(data.contactLimit) : null,
-        recentDays: data.recentDays ? String(data.recentDays) : null,
-        targetAudienceCount: data.targetAudienceCount || "0",
+        contactLimit: data.contactLimit || null,
+        recentDays: data.recentDays || null,
+        targetAudienceCount: data.targetAudienceCount || 0,
         messageType: data.messageType || "text",
         messageContent: data.messageContent || "",
         templateId: data.templateId,
         scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
       })
       .returning();
+
+    revalidatePath("/dashboard/campaigns");
 
     // If sendNow flag is set, immediately trigger send
     if (data.sendNow) {
@@ -225,23 +269,17 @@ export async function updateCampaign(id: string, data: UpdateCampaignData) {
       return { success: false, error: "لا يمكن تعديل حملة مكتملة" };
     }
 
-    // Transform number values to strings for DB (text columns)
-    const dbData: Record<string, unknown> = { ...data };
-    if (typeof data.contactLimit === 'number') {
-      dbData.contactLimit = String(data.contactLimit);
-    }
-    if (typeof data.recentDays === 'number') {
-      dbData.recentDays = String(data.recentDays);
-    }
-
     const [updatedCampaign] = await db
       .update(campaign)
       .set({
-        ...dbData,
+        ...data,
         updatedAt: new Date(),
       })
       .where(eq(campaign.id, id))
       .returning();
+
+    revalidatePath("/dashboard/campaigns");
+    revalidatePath(`/dashboard/campaigns/${id}`);
 
     return {
       success: true,
@@ -275,6 +313,8 @@ export async function deleteCampaign(id: string) {
     }
 
     await db.delete(campaign).where(eq(campaign.id, id));
+
+    revalidatePath("/dashboard/campaigns");
 
     return {
       success: true,
@@ -355,16 +395,25 @@ export async function sendCampaign(id: string) {
         
       case "count":
         // Send to first N contacts
-        const limit = parseInt(existingCampaign.contactLimit || "0") || allUserContacts.length;
+        const limit = existingCampaign.contactLimit || allUserContacts.length;
         contacts = allUserContacts.slice(0, limit);
         break;
         
       case "recent":
         // Contacts created in last X days
-        const days = parseInt(existingCampaign.recentDays || "7") || 7;
+        const days = existingCampaign.recentDays || 7;
         const cutoffDate = new Date();
         cutoffDate.setDate(cutoffDate.getDate() - days);
         contacts = allUserContacts.filter(c => new Date(c.createdAt) >= cutoffDate);
+        break;
+        
+      case "active":
+        // Contacts active in last 24 hours
+        const activeCutoff = new Date();
+        activeCutoff.setHours(activeCutoff.getHours() - 24);
+        contacts = allUserContacts.filter(c => 
+          c.lastActivityAt && new Date(c.lastActivityAt) >= activeCutoff
+        );
         break;
         
       default:
@@ -375,8 +424,15 @@ export async function sendCampaign(id: string) {
         return { success: false, error: "لا يوجد جهات اتصال مستهدفة لإرسال الحملة" };
     }
 
-    // 4. Update Status to Sending
-    await updateCampaign(id, { status: "sending", sentAt: new Date() });
+    // 4. Update Status to Sending and set total target count
+    await updateCampaign(id, { 
+        status: "sending", 
+        sentAt: new Date(),
+        targetAudienceCount: contacts.length
+    });
+    
+    revalidatePath("/dashboard/campaigns");
+    revalidatePath(`/dashboard/campaigns/${id}`);
 
     // 5. Send Loop (This should ideally be a background job)
     // For MVP we will do it inline but handle errors gracefully per contact
@@ -430,13 +486,17 @@ export async function sendCampaign(id: string) {
     // Just update status.
     
     await updateCampaign(id, { 
-        status: "active", // Active means sent and tracking
-        // deliveredCount: sentCount.toString() // Optional: update initial count? No, wait for delivery receipts.
+        status: "completed", 
+        targetAudienceCount: sentCount,
+        deliveredCount: sentCount // Update deliveredCount for immediate feedback
     });
+
+    revalidatePath("/dashboard/campaigns");
+    revalidatePath(`/dashboard/campaigns/${id}`);
 
     return {
       success: true,
-      message: `تم بدء إرسال الحملة إلى ${sentCount} مستلم`,
+      message: `تم إرسال الحملة بنجاح إلى ${sentCount} مستلم`,
     };
   } catch (error: any) {
     console.error("Send campaign error:", error);
@@ -445,3 +505,69 @@ export async function sendCampaign(id: string) {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Pause an active campaign
+ */
+export async function pauseCampaign(id: string) {
+    try {
+        const user = await getAuthUser();
+        const [camp] = await db.select().from(campaign).where(and(eq(campaign.id, id), eq(campaign.userId, user.id))).limit(1);
+        
+        if (!camp) return { success: false, error: "الحملة غير موجودة" };
+        if (camp.status !== 'active' && camp.status !== 'sending') return { success: false, error: "لا يمكن إيقاف حملة غير نشطة" };
+
+        await db.update(campaign).set({ status: 'paused', updatedAt: new Date() }).where(eq(campaign.id, id));
+        
+        revalidatePath("/dashboard/campaigns");
+        revalidatePath(`/dashboard/campaigns/${id}`);
+        
+        return { success: true, message: "تم إيقاف الحملة مؤقتاً" };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Resume a paused campaign
+ */
+export async function resumeCampaign(id: string) {
+    try {
+        const user = await getAuthUser();
+        const [camp] = await db.select().from(campaign).where(and(eq(campaign.id, id), eq(campaign.userId, user.id))).limit(1);
+        
+        if (!camp) return { success: false, error: "الحملة غير موجودة" };
+        if (camp.status !== 'paused') return { success: false, error: "الحملة ليست في حالة إيقاف مؤقت" };
+
+        await db.update(campaign).set({ status: 'active', updatedAt: new Date() }).where(eq(campaign.id, id));
+        
+        revalidatePath("/dashboard/campaigns");
+        revalidatePath(`/dashboard/campaigns/${id}`);
+        
+        return { success: true, message: "تم استئناف الحملة" };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Stop/Complete a campaign
+ */
+export async function stopCampaign(id: string) {
+    try {
+        const user = await getAuthUser();
+        const [camp] = await db.select().from(campaign).where(and(eq(campaign.id, id), eq(campaign.userId, user.id))).limit(1);
+        
+        if (!camp) return { success: false, error: "الحملة غير موجودة" };
+        
+        await db.update(campaign).set({ status: 'completed', updatedAt: new Date() }).where(eq(campaign.id, id));
+        
+        revalidatePath("/dashboard/campaigns");
+        revalidatePath(`/dashboard/campaigns/${id}`);
+        
+        return { success: true, message: "تم إنهاء الحملة بنجاح" };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+

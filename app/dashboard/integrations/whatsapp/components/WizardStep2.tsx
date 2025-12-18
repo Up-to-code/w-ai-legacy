@@ -36,21 +36,20 @@ export function WizardStep2({
             <div className="space-y-6">
                 <div className="space-y-4">
                     <CopyableInput
-                        label="Webhook URL"
+                        label="رابط الويب هوك الخاص بك"
                         value={webhookUrl}
                         onCopy={() => handleCopy(webhookUrl)}
                     />
-
                     <CopyableInput
-                        label="Verify Token"
+                        label="رمز التحقق (Verify Token)"
                         value={verifyToken}
                         onCopy={() => handleCopy(verifyToken)}
                         onRefresh={refreshVerifyToken}
                     />
                 </div>
 
-                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 text-sm text-blue-800 leading-relaxed mb-6">
-                    💡 بعد تفعيل الويب هوك في Meta، انقر على الزر بالأسفل للتأكد من نجاح العملية.
+                <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-xs text-gray-600 leading-relaxed">
+                    💡 يتم توجيه الرسائل من Meta إلى هذا الرابط، ويقوم النظام بمطابقتها تلقائياً مع حسابك.
                 </div>
 
                 <div className="flex justify-between items-center pt-4">

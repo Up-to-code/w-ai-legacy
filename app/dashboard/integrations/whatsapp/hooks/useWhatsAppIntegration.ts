@@ -13,7 +13,7 @@ import { verifyWebhookSubscription } from "@/app/actions/verify-webhook-subscrip
 import { sendTestMessage } from "@/app/actions/send-test-message";
 import type { WhatsAppFormData, WhatsAppStatus, WhatsAppLoadingStates } from "../types";
 
-const WEBHOOK_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/whatsapp`;
+const BASE_WEBHOOK_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/whatsapp`;
 
 const generateToken = (): string => {
   const array = new Uint8Array(16);
@@ -47,6 +47,7 @@ export function useWhatsAppIntegration() {
   const [step, setStep] = useState(1);
   const [editMode, setEditMode] = useState(false);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   // Loading States
   const [loadingStates, setLoadingStates] = useState<WhatsAppLoadingStates>(initialLoadingStates);
@@ -86,10 +87,12 @@ export function useWhatsAppIntegration() {
               businessAccountId: credentials.businessAccountId || "",
               verifyToken: credentials.verifyToken || generateToken()
             });
+            setUserId(result.data.userId);
           } else {
             console.log("[useWhatsAppIntegration] No valid credentials, showing wizard");
             setStatus("disconnected");
             setFormDataState(prev => ({ ...prev, verifyToken: generateToken() }));
+            setUserId(result.data.userId);
           }
         } else {
           console.log("[useWhatsAppIntegration] No integration data found, showing wizard");
@@ -124,7 +127,7 @@ export function useWhatsAppIntegration() {
     const newToken = generateToken();
     const updatedData = { ...formData, verifyToken: newToken };
     setFormDataState(updatedData);
-
+  
     if (status === 'connected') {
       try {
         await updateIntegrationSettings("whatsapp", { credentials: updatedData });
@@ -169,7 +172,7 @@ export function useWhatsAppIntegration() {
     setLoading("isVerifying", true);
     try {
       const result = await verifyWebhookSubscription(
-        formData.verifyToken,
+        "whatsapp",
         formData.accessToken
       );
 
@@ -277,7 +280,7 @@ export function useWhatsAppIntegration() {
     step,
     editMode,
     showDisconnectModal,
-    webhookUrl: WEBHOOK_URL,
+    webhookUrl: userId ? `${BASE_WEBHOOK_URL}/${userId}` : BASE_WEBHOOK_URL,
 
     // Loading States
     ...loadingStates,

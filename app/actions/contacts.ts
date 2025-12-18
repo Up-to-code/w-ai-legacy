@@ -4,12 +4,13 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { contact } from "@/lib/db/schema";
-import { eq, and, ilike, or, desc, asc, sql } from "drizzle-orm";
-import type { 
-  Contact, 
-  CreateContactData, 
-  UpdateContactData, 
-  ContactListParams 
+import { eq, and, ilike, or, desc, asc, sql, gte } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import type {
+  Contact,
+  CreateContactData,
+  UpdateContactData,
+  ContactListParams,
 } from "@/types/contact";
 
 // Helper function to get authenticated user
@@ -28,10 +29,10 @@ async function getAuthUser() {
 /**
  * Get estimated count of contacts based on filters
  */
-export async function getContactCount(filters: { tags?: string[] } = {}) {
+export async function getContactCount(filters: { tags?: string[], activeOnly?: boolean } = {}) {
   try {
     const user = await getAuthUser();
-    
+
     // Build where clause
     const whereConditions = [eq(contact.userId, user.id)];
 
@@ -41,6 +42,13 @@ export async function getContactCount(filters: { tags?: string[] } = {}) {
       whereConditions.push(
         sql`${contact.tags} && ARRAY[${filters.tags.map(t => `'${t}'`).join(',')}]::text[]`
       );
+    }
+
+    // Filter by activity in last 24h
+    if (filters.activeOnly) {
+      const activeCutoff = new Date();
+      activeCutoff.setHours(activeCutoff.getHours() - 24);
+      whereConditions.push(gte(contact.lastActivityAt, activeCutoff));
     }
 
     const whereCombined = and(...whereConditions);
@@ -70,7 +78,7 @@ export async function getContactCount(filters: { tags?: string[] } = {}) {
 export async function getContacts(params: ContactListParams = {}) {
   try {
     const user = await getAuthUser();
-    
+
     const {
       page = 1,
       limit = 10,
@@ -111,7 +119,7 @@ export async function getContacts(params: ContactListParams = {}) {
                           sortBy === "lastActivityAt" ? contact.lastActivityAt :
                           sortBy === "orderCount" ? contact.orderCount :
                           contact.name;
-    
+
     const orderByClause = sortOrder === "asc" ? asc(orderByColumn) : desc(orderByColumn);
 
     // Get total count
@@ -205,7 +213,7 @@ export async function createContact(data: CreateContactData) {
         email: data.email || null,
         tags: data.tags || [],
         notes: data.notes || null,
-        orderCount: "0",
+        orderCount: 0,
       })
       .returning();
 
@@ -324,7 +332,7 @@ export async function bulkImportContacts(contacts: CreateContactData[]) {
       email: c.email || null,
       tags: c.tags || [],
       notes: c.notes || null,
-      orderCount: "0",
+      orderCount: 0,
     }));
 
     const insertedContacts = await db

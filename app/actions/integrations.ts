@@ -100,28 +100,9 @@ export async function connectIntegration(serviceId: string, credentials: Record<
   try {
     const user = await getAuthUser();
 
-    // Check if integration already exists for this service
-    const [existingIntegration] = await db
-      .select()
-      .from(integration)
-      .where(
-        and(
-          eq(integration.userId, user.id),
-          eq(integration.serviceId, data.serviceId)
-        )
-      )
-      .limit(1);
-
-    if (existingIntegration) {
-      return {
-        success: false,
-        error: "هذا التكامل موجود بالفعل. يمكنك تحديث إعداداته بدلاً من ذلك.",
-      };
-    }
-
-    // Validate Credentials for specific services
+    // Validate Credentials for specific services FIRST
     if (data.serviceId === "whatsapp") {
-        const { accessToken, phoneNumberId } = data.credentials;
+        const { accessToken, phoneNumberId } = data.credentials as any;
         if (!accessToken || !phoneNumberId) {
              return { success: false, error: "بيانات الاعتماد غير مكتملة" };
         }
@@ -143,8 +124,27 @@ export async function connectIntegration(serviceId: string, credentials: Record<
              }
 
         } catch (e) {
+             console.error("Meta fetch error:", e);
              return { success: false, error: "حدث خطأ أثناء الاتصال بخوادم Meta للتحقق من البيانات" };
         }
+    }
+
+    // Check if integration already exists for this service
+    const [existingIntegration] = await db
+      .select()
+      .from(integration)
+      .where(
+        and(
+          eq(integration.userId, user.id),
+          eq(integration.serviceId, data.serviceId)
+        )
+      )
+      .limit(1);
+
+    if (existingIntegration) {
+      // If it exists, update it instead of failing
+      console.log(`[connectIntegration] Integration exists for ${data.serviceId}, updating...`);
+      return updateIntegrationSettings(data.serviceId, { credentials: data.credentials });
     }
 
     // TODO: In production, encrypt credentials before storing

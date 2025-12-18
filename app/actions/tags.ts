@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { tag, contact } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import type { 
   Tag, 
   CreateTagData, 
@@ -69,9 +70,12 @@ export async function createTag(data: CreateTagData) {
         userId: user.id,
         name: data.name,
         color: data.color || "blue",
-        contactCount: "0",
+        contactCount: 0,
       })
       .returning();
+
+    revalidatePath("/dashboard/contacts");
+    revalidatePath("/dashboard/campaigns");
 
     return {
       success: true,
@@ -197,11 +201,14 @@ export async function updateTagCounts() {
       await db
         .update(tag)
         .set({ 
-          contactCount: String(count),
+          contactCount: count,
           updatedAt: new Date(),
         })
         .where(eq(tag.id, tagItem.id));
     }
+
+    revalidatePath("/dashboard/contacts");
+    revalidatePath("/dashboard/campaigns");
 
     return {
       success: true,

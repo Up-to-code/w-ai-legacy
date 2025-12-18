@@ -3,7 +3,7 @@
  */
 
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "failed" | "paused" | "sending";
-export type AudienceType = "all" | "tags" | "count" | "recent";
+export type AudienceType = "all" | "tags" | "count" | "recent" | "active";
 export type MessageType = "text" | "image" | "template";
 
 export interface Campaign {
@@ -15,9 +15,9 @@ export interface Campaign {
   // Audience
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: string | null;      // For "count" type - send to first N contacts
-  recentDays?: string | null;        // For "recent" type - contacts from last X days
-  targetAudienceCount?: string;
+  contactLimit?: number | null;      // For "count" type - send to first N contacts
+  recentDays?: number | null;        // For "recent" type - contacts from last X days
+  targetAudienceCount?: number;
   
   // Content
   messageType?: MessageType;
@@ -25,8 +25,8 @@ export interface Campaign {
   templateId?: string;
 
   // Stats
-  deliveredCount?: string;
-  readCount?: string;
+  deliveredCount?: number;
+  readCount?: number;
   
   // Timing
   scheduledAt?: Date | null;
@@ -43,9 +43,9 @@ export interface CreateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: string | number;  // Can accept number from UI, converted to string for DB
-  recentDays?: string | number;    // Can accept number from UI, converted to string for DB
-  targetAudienceCount?: string;
+  contactLimit?: number;
+  recentDays?: number;
+  targetAudienceCount?: number;
   messageType?: MessageType;
   messageContent?: string;
   templateId?: string;
@@ -58,14 +58,14 @@ export interface UpdateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: string | number;
-  recentDays?: string | number;
-  targetAudienceCount?: string;
+  contactLimit?: number;
+  recentDays?: number;
+  targetAudienceCount?: number;
   messageType?: MessageType;
   messageContent?: string;
   templateId?: string;
-  deliveredCount?: string;
-  readCount?: string;
+  deliveredCount?: number;
+  readCount?: number;
   scheduledAt?: Date;
   sentAt?: Date;
 }
