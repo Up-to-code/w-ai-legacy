@@ -225,10 +225,19 @@ export async function updateCampaign(id: string, data: UpdateCampaignData) {
       return { success: false, error: "لا يمكن تعديل حملة مكتملة" };
     }
 
+    // Transform number values to strings for DB (text columns)
+    const dbData: Record<string, unknown> = { ...data };
+    if (typeof data.contactLimit === 'number') {
+      dbData.contactLimit = String(data.contactLimit);
+    }
+    if (typeof data.recentDays === 'number') {
+      dbData.recentDays = String(data.recentDays);
+    }
+
     const [updatedCampaign] = await db
       .update(campaign)
       .set({
-        ...data,
+        ...dbData,
         updatedAt: new Date(),
       })
       .where(eq(campaign.id, id))
