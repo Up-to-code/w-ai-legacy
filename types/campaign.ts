@@ -3,7 +3,7 @@
  */
 
 export type CampaignStatus = "draft" | "scheduled" | "active" | "completed" | "failed" | "paused" | "sending";
-export type AudienceType = "all" | "tags";
+export type AudienceType = "all" | "tags" | "count" | "recent";
 export type MessageType = "text" | "image" | "template";
 
 export interface Campaign {
@@ -15,6 +15,8 @@ export interface Campaign {
   // Audience
   audienceType?: AudienceType;
   includedTags?: string[];
+  contactLimit?: number;      // For "count" type - send to first N contacts
+  recentDays?: number;        // For "recent" type - contacts from last X days
   targetAudienceCount?: string;
   
   // Content
@@ -41,11 +43,14 @@ export interface CreateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
+  contactLimit?: number;
+  recentDays?: number;
   targetAudienceCount?: string;
   messageType?: MessageType;
   messageContent?: string;
   templateId?: string;
   scheduledAt?: Date;
+  sendNow?: boolean;  // Flag to send immediately after creation
 }
 
 export interface UpdateCampaignData {
@@ -53,6 +58,8 @@ export interface UpdateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
+  contactLimit?: number;
+  recentDays?: number;
   targetAudienceCount?: string;
   messageType?: MessageType;
   messageContent?: string;

@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/dashboard/header";
 import { Copy, Plus, Edit2, Trash2, Search, X } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { getTemplates, createTemplate, updateTemplate, deleteTemplate, duplicateTemplate } from "@/app/actions/templates";
@@ -163,7 +162,6 @@ export default function TemplatesPage() {
 
   return (
     <>
-      <Header />
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold mb-2">قوالب الرسائل</h1>

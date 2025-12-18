@@ -32,8 +32,7 @@ export default function DashboardPage() {
   
   return (
     <>
-      <Header />
-      
+       
       <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
            {authLoading ? (

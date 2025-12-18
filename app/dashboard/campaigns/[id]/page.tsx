@@ -1,4 +1,3 @@
-import { Header } from "@/components/dashboard/header";
 import { getCampaign } from "@/app/actions/campaigns";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -34,8 +33,7 @@ export default async function CampaignDetailsPage({ params }: { params: Promise<
 
   return (
     <>
-      <Header />
-      <div className="max-w-5xl mx-auto pb-20 px-4 sm:px-6">
+       <div className="max-w-5xl mx-auto pb-20 px-4 sm:px-6">
         {/* Header Section */}
         <div className="flex items-center gap-4 mb-8">
             <Link 

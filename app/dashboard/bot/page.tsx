@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/dashboard/header";
 import { Bot, Settings2, Save, FileText, Database, Plus, Search, Trash2, Send, RefreshCw, Sparkles, Loader2, Link as LinkIcon, AlertCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/lib/hooks/use-toast";
@@ -178,8 +177,7 @@ export default function BotPage() {
 
   return (
     <>
-      <Header />
-      <div className="mb-8">
+       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">إعدادات المساعد الذكي (AI)</h1>
         <p className="text-gray-500">تخصيص سلوك الرد الآلي والمعلومات التي يعتمد عليها.</p>
       </div>

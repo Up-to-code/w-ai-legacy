@@ -6,12 +6,9 @@ import Link from "next/link";
 
 // Hook
 import { useWhatsAppIntegration } from "./hooks/useWhatsAppIntegration";
+import { ConnectedView , WizardStep1 , WizardStep2 , WizardStep3  } from "./components";
 
 // Components
-import { WizardStep1 } from "./components/WizardStep1";
-import { WizardStep2 } from "./components/WizardStep2";
-import { WizardStep3 } from "./components/WizardStep3";
-import { ConnectedView } from "./components/ConnectedView";
 
 export default function WhatsAppIntegrationPage() {
     const integration = useWhatsAppIntegration();
@@ -30,12 +27,8 @@ export default function WhatsAppIntegrationPage() {
 
     return (
         <div className="min-h-screen  pb-20 relative overflow-hidden font-sans" dir="rtl">
-            <Header />
-            
-            {/* Ambient Background Blobs */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#105D3B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none"></div>
-
+             
+    
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">

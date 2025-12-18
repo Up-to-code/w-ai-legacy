@@ -1,11 +1,9 @@
-import { Header } from "@/components/dashboard/header";
 import { Search, Book, MessageCircle, Mail } from "lucide-react";
 
 export default function HelpPage() {
   return (
     <>
-      <Header />
-      <div className="text-center max-w-2xl mx-auto mb-12">
+       <div className="text-center max-w-2xl mx-auto mb-12">
         <h1 className="text-3xl font-bold mb-4">كيف يمكننا مساعدتك؟</h1>
         <p className="text-gray-500 mb-8">ابحث في قاعدة المعرفة أو تواصل مع فريق الدعم الفني.</p>
         

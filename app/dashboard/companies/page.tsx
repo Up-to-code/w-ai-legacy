@@ -200,8 +200,7 @@ export default function ContactsPage() {
 
   return (
     <>
-      <Header />
-      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+       <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
            <h1 className="text-2xl font-bold text-gray-900">جهات الاتصال</h1>
            <p className="text-gray-500 text-sm mt-1">

@@ -1,4 +1,5 @@
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface WizardStep3Props {
     setStatus: (status: "loading" | "connected" | "disconnected") => void;
@@ -17,18 +18,20 @@ export function WizardStep3({ setStatus, setStep }: WizardStep3Props) {
             <p className="text-gray-500 max-w-md mx-auto mb-10 leading-relaxed">
                 حساب الواتساب الخاص بك متصل الآن وجاهز للاستخدام. يمكنك البدء في استقبال الرسائل وإرسال الحملات فوراً.
             </p>
-            
+
             <div className="max-w-md mx-auto pt-8 border-t border-gray-100">
-                <button
+                <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full"
                     onClick={() => {
                         setStatus("connected");
-                        setStep(0); // This will trigger the Connected View
+                        setStep(0);
                     }}
-                    className="w-full py-4 bg-[#105D3B] text-white rounded-2xl font-bold hover:shadow-xl hover:shadow-[#105D3B]/20 transition-all flex items-center justify-center gap-2"
                 >
                     الذهاب للوحة الإعدادات
                     <ArrowRight className="w-5 h-5" />
-                </button>
+                </Button>
             </div>
         </div>
     );

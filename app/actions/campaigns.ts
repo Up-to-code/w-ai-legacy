@@ -168,6 +168,8 @@ export async function createCampaign(data: CreateCampaignData) {
         status: data.status || "draft",
         audienceType: data.audienceType || "all",
         includedTags: data.includedTags || [],
+        contactLimit: data.contactLimit ? String(data.contactLimit) : null,
+        recentDays: data.recentDays ? String(data.recentDays) : null,
         targetAudienceCount: data.targetAudienceCount || "0",
         messageType: data.messageType || "text",
         messageContent: data.messageContent || "",
@@ -175,6 +177,16 @@ export async function createCampaign(data: CreateCampaignData) {
         scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
       })
       .returning();
+
+    // If sendNow flag is set, immediately trigger send
+    if (data.sendNow) {
+      const sendResult = await sendCampaign(newCampaign.id);
+      return {
+        success: true,
+        message: sendResult.success ? sendResult.message : "تم إنشاء الحملة وجاري الإرسال",
+        data: newCampaign as Campaign,
+      };
+    }
 
     return {
       success: true,
@@ -315,22 +327,39 @@ export async function sendCampaign(id: string) {
         return { success: false, error: "بيانات اعتماد واتساب غير صالحة" };
     }
 
-    // 3. Fetch Contacts
+    // 3. Fetch Contacts based on audience type
     let contacts: any[] = [];
-    if (existingCampaign.audienceType === "all") {
-        contacts = await db
-            .select()
-            .from(contact) // Use imported schema object 'contact'
-            .where(eq(contact.userId, user.id));
-    } else if (existingCampaign.audienceType === "tags" && existingCampaign.includedTags && existingCampaign.includedTags.length > 0) {
-        // Filter by tags (simplified: check if contact has ANY of the tags)
-        // Drizzle array operations might vary by driver.
-        // For standard Postgres: tags && ARRAY['tag1', 'tag2']
-        // Here we'll fetch all and filter in memory for simplicity/safety unless we are sure about array operators support
-        const allContacts = await db.select().from(contact).where(eq(contact.userId, user.id));
-        contacts = allContacts.filter(c => 
+    const allUserContacts = await db.select().from(contact).where(eq(contact.userId, user.id));
+    
+    switch (existingCampaign.audienceType) {
+      case "all":
+        contacts = allUserContacts;
+        break;
+        
+      case "tags":
+        if (existingCampaign.includedTags && existingCampaign.includedTags.length > 0) {
+          contacts = allUserContacts.filter(c => 
             c.tags && c.tags.some((t: string) => existingCampaign.includedTags?.includes(t))
-        );
+          );
+        }
+        break;
+        
+      case "count":
+        // Send to first N contacts
+        const limit = parseInt(existingCampaign.contactLimit || "0") || allUserContacts.length;
+        contacts = allUserContacts.slice(0, limit);
+        break;
+        
+      case "recent":
+        // Contacts created in last X days
+        const days = parseInt(existingCampaign.recentDays || "7") || 7;
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
+        contacts = allUserContacts.filter(c => new Date(c.createdAt) >= cutoffDate);
+        break;
+        
+      default:
+        contacts = allUserContacts;
     }
 
     if (contacts.length === 0) {

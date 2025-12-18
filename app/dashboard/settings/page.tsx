@@ -1,6 +1,5 @@
 "use client";
 
-import { Header } from "@/components/dashboard/header";
 import { User, Bell, Lock, Globe, Save, MessageSquare, Smartphone, Mail, Shield, Key, Eye, ChevronLeft, CheckCircle, LogOut, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,7 +12,6 @@ export default function SettingsPage() {
 
   return (
     <>
-      <Header />
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">الإعدادات</h1>
         <p className="text-gray-500">إدارة الملف الشخصي وإعدادات الحساب.</p>

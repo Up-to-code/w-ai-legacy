@@ -97,8 +97,10 @@ export const campaign = pgTable("campaign", {
   status: text("status").notNull().default("draft"), // draft, scheduled, active, completed, failed, paused
   
   // Audience configuration
-  audienceType: text("audienceType").default("all"), // all, tags
+  audienceType: text("audienceType").default("all"), // all, tags, count, recent
   includedTags: text("includedTags").array(), // Array of tag IDs if audienceType is tags
+  contactLimit: text("contactLimit"), // For "count" type - send to first N contacts
+  recentDays: text("recentDays"), // For "recent" type - contacts from last X days
   targetAudienceCount: text("targetAudienceCount").default("0"),
   
   // Message configuration
