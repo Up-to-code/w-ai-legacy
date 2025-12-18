@@ -15,8 +15,8 @@ export interface Campaign {
   // Audience
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: number;      // For "count" type - send to first N contacts
-  recentDays?: number;        // For "recent" type - contacts from last X days
+  contactLimit?: string | null;      // For "count" type - send to first N contacts
+  recentDays?: string | null;        // For "recent" type - contacts from last X days
   targetAudienceCount?: string;
   
   // Content
@@ -43,8 +43,8 @@ export interface CreateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: number;
-  recentDays?: number;
+  contactLimit?: string | number;  // Can accept number from UI, converted to string for DB
+  recentDays?: string | number;    // Can accept number from UI, converted to string for DB
   targetAudienceCount?: string;
   messageType?: MessageType;
   messageContent?: string;
@@ -58,8 +58,8 @@ export interface UpdateCampaignData {
   status?: CampaignStatus;
   audienceType?: AudienceType;
   includedTags?: string[];
-  contactLimit?: number;
-  recentDays?: number;
+  contactLimit?: string | number;
+  recentDays?: string | number;
   targetAudienceCount?: string;
   messageType?: MessageType;
   messageContent?: string;
