@@ -18,28 +18,28 @@ async function seedDemoTemplates() {
         name: "otp_verification_ar",
         content: "رمز التحقق الخاص بك هو: {{1}}. يرجى عدم مشاركة هذا الرمز مع أي شخص.",
         category: "utility",
-        usageCount: "12",
+        usageCount: 12,
       },
       {
         userId: firstUser.id,
         name: "marketing_promo_ar",
         content: "مرحباً {{1}}! خصم خاص 20% لفترة محدودة على جميع المنتجات. استخدم الكود: {{2}} عند الدفع.",
         category: "marketing",
-        usageCount: "45",
+        usageCount: 45,
       },
       {
         userId: firstUser.id,
         name: "shipping_update_ar",
         content: "أهلاً {{1}}، طلبك رقم {{2}} قيد الشحن الآن. يمكنك تتبع الشحنة من هنا: {{3}}",
         category: "utility",
-        usageCount: "28",
+        usageCount: 28,
       },
       {
         userId: firstUser.id,
         name: "welcome_message_ar",
         content: "شكراً لتواصلك معنا! نحن هنا لمساعدتك. كيف يمكننا خدمتك اليوم؟",
         category: "general",
-        usageCount: "156",
+        usageCount: 156,
       }
     ];
 
