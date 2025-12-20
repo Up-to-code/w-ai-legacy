@@ -1,51 +1,45 @@
 "use client";
 
-import { Search, MessageSquare, ExternalLink, Loader2 } from "lucide-react";
+import { Search, MessageSquare, ExternalLink, Loader2, ShoppingBag } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { getIntegrations } from "@/app/actions/integrations";
+import { useIntegrations } from "@/hooks/use-integrations";
 
-// App definition - Only WhatsApp for now
+// App definition
 const APPS = [
   {
     id: "whatsapp",
     name: "WhatsApp Business API",
     description: "اربط حسابك مع واتساب لإرسال الحملات والرد الآلي.",
     icon: MessageSquare,
-    color: "bg-green-500",
+    image: "/icons/whatsapp.svg",
+    color: "bg-white border-2 border-[#25D366]/10",
     category: "communication",
+  },
+  {
+    id: "salla",
+    name: "Salla",
+    description: "اربط متجرك في منصة سلة لمزامنة الطلبات والعملاء والمنتجات.",
+    icon: ShoppingBag,
+    image: "/icons/salla.svg",
+    color: "bg-white border-2 border-[#BAF3E6]",
+    category: "ecommerce",
   },
 ];
 
 const CATEGORIES = [
   { id: "all", label: "الكل" },
   { id: "communication", label: "المراسلة" },
+  { id: "ecommerce", label: "التجارة الإلكترونية" },
 ];
 
 export default function IntegrationsPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [connectedApps, setConnectedApps] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load integrations status
-  useEffect(() => {
-    async function loadIntegrations() {
-      try {
-        const result = await getIntegrations();
-        if (result.success && result.data) {
-          const connectedIds = result.data.filter(i => i.status === 'connected').map(i => i.serviceId as string);
-          setConnectedApps(connectedIds);
-        }
-      } catch (error) {
-        console.error("Failed to load integrations", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadIntegrations();
-  }, []);
+  const { isConnected, isLoading } = useIntegrations();
 
   const filteredApps = APPS.filter(app => {
     const matchesCategory = activeCategory === "all" || app.category === activeCategory;
@@ -103,34 +97,48 @@ export default function IntegrationsPage() {
 
         {/* Apps Grid */}
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredApps.map((app) => (
-            <div key={app.id} className="group border border-gray-200 rounded-2xl p-5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all bg-white flex flex-col">
-              <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-2xl ${app.color} bg-opacity-10 flex items-center justify-center text-white shadow-sm`}>
-                  <app.icon className={`w-6 h-6 ${app.color.replace('bg-', 'text-')}`} />
+          {filteredApps.map((app) => {
+            const connected = isConnected(app.id);
+            return (
+              <div key={app.id} className="group border border-gray-200 rounded-2xl p-5 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 transition-all bg-white flex flex-col">
+                <div className="flex items-start justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-2xl ${app.color} bg-opacity-10 flex items-center justify-center text-white shadow-sm overflow-hidden`}>
+                    {/* @ts-ignore */}
+                    {app.image ? (
+                      <Image
+                        src={app.image}
+                        alt={app.name}
+                        width={32}
+                        height={32}
+                        className="w-8  h-8 object-contain"
+                      />
+                    ) : (
+                      <app.icon className={`w-6 h-6 ${app.color.replace('bg-', 'text-')}`} />
+                    )}
+                  </div>
+                  {connected ? (
+                    <StatusBadge status="connected" />
+                  ) : (
+                    <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
+                  )}
                 </div>
-                {connectedApps.includes(app.id) ? (
-                  <StatusBadge status="connected" />
-                ) : (
-                  <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-primary transition-colors" />
-                )}
-              </div>
 
-              <div className="mb-6 flex-1">
-                <h3 className="font-bold text-gray-900 mb-2">{app.name}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{app.description}</p>
-              </div>
+                <div className="mb-6 flex-1">
+                  <h3 className="font-bold text-gray-900 mb-2">{app.name}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{app.description}</p>
+                </div>
 
-              <div className="flex gap-2">
-                <Link href="/dashboard/integrations/whatsapp" className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${connectedApps.includes(app.id)
-                  ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                  : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
-                  }`}>
-                  {connectedApps.includes(app.id) ? "إدارة الإعدادات" : "ربط الخدمة"}
-                </Link>
+                <div className="flex gap-2">
+                  <Link href={`/dashboard/integrations/${app.id}`} className={`w-full py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${connected
+                    ? "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    : "bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20"
+                    }`}>
+                    {connected ? "إدارة الإعدادات" : "ربط الخدمة"}
+                  </Link>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </>
