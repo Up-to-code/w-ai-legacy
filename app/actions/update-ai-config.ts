@@ -4,73 +4,139 @@ import { db } from "@/lib/db";
 import { integration } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { WhatsAppAIConfig } from "@/app/dashboard/integrations/whatsapp/types";
 
-export async function updateAIConfig(enabled: boolean): Promise<{ success: boolean; error?: string }> {
-    try {
-        const session = await auth.api.getSession({
-            headers: await headers()
-        });
+interface UpdateAIConfigResult {
+  success: boolean;
+  error?: string;
+  data?: WhatsAppAIConfig;
+}
 
-        if (!session?.user?.id) {
-            return { success: false, error: "Unauthorized" };
-        }
+interface IntegrationCredentials {
+  accessToken?: string;
+  phoneNumberId?: string;
+  businessAccountId?: string;
+  verifyToken?: string;
+  aiAutoResponse?: WhatsAppAIConfig;
+}
 
-        const userId = session.user.id;
+const DEFAULT_AI_CONFIG: WhatsAppAIConfig = {
+  enabled: true,
+  responseDelay: 2,
+  businessHoursOnly: false,
+  businessHours: {
+    start: "09:00",
+    end: "18:00",
+    timezone: "Africa/Cairo",
+    days: [1, 2, 3, 4, 5] // Mon-Fri
+  },
+  fallbackMessage: "شكراً لتواصلك! سنرد عليك في أقرب وقت."
+};
 
-        // Fetch current integration
-        const [existingIntegration] = await db
-            .select()
-            .from(integration)
-            .where(eq(integration.userId, userId))
-            .limit(1);
+/**
+ * Update AI Auto-Response configuration for WhatsApp integration
+ * Supports updating either just the enabled flag or the entire config
+ */
+export async function updateAIConfig(
+  configOrEnabled: WhatsAppAIConfig | boolean
+): Promise<UpdateAIConfigResult> {
+  try {
+    // Authenticate user
+    const session = await auth.api.getSession({
+      headers: await headers()
+    });
 
-        if (!existingIntegration) {
-            return { success: false, error: "Integration not found" };
-        }
-
-        // Parse existing credentials
-        let credentials: any = {};
-        try {
-            credentials = existingIntegration.credentials ? JSON.parse(existingIntegration.credentials) : {};
-        } catch (e) {
-            console.error("[updateAIConfig] Failed to parse credentials:", e);
-            credentials = {};
-        }
-
-        // Update AI config - preserve other settings, only change enabled
-        const currentAIConfig: WhatsAppAIConfig = credentials.aiAutoResponse || {
-            enabled: true,
-            responseDelay: 2,
-            businessHoursOnly: false,
-            businessHours: {
-                start: "09:00",
-                end: "18:00",
-                timezone: "Africa/Cairo",
-                days: [1, 2, 3, 4, 5]
-            },
-            fallbackMessage: "شكراً لتواصلك! سنرد عليك في أقرب وقت."
-        };
-
-        currentAIConfig.enabled = enabled;
-
-        // Update credentials with new AI config
-        credentials.aiAutoResponse = currentAIConfig;
-
-        // Save back to database
-        await db
-            .update(integration)
-            .set({
-                credentials: JSON.stringify(credentials),
-                updatedAt: new Date()
-            })
-            .where(eq(integration.userId, userId));
-
-        return { success: true };
-
-    } catch (error) {
-        console.error("[updateAIConfig] Error:", error);
-        return { success: false, error: "Failed to update AI config" };
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized - Please log in" };
     }
+
+    const userId = session.user.id;
+
+    // Fetch current integration with WhatsApp service type filter
+    const [existingIntegration] = await db
+      .select()
+      .from(integration)
+      .where(
+        and(
+          eq(integration.userId, userId),
+          eq(integration.serviceId, "whatsapp")
+        )
+      )
+      .limit(1);
+
+    if (!existingIntegration) {
+      return { 
+        success: false, 
+        error: "WhatsApp integration not found - Please connect first" 
+      };
+    }
+
+    // Parse existing credentials with error handling
+    let credentials: IntegrationCredentials = {};
+    try {
+      credentials = existingIntegration.credentials 
+        ? JSON.parse(existingIntegration.credentials) 
+        : {};
+    } catch (parseError) {
+      console.error("[updateAIConfig] Failed to parse credentials:", parseError);
+      return { 
+        success: false, 
+        error: "Invalid credentials format - Please reconnect integration" 
+      };
+    }
+
+    // Determine new AI config based on input type
+    let newAIConfig: WhatsAppAIConfig;
+    
+    if (typeof configOrEnabled === 'boolean') {
+      // Update only enabled flag, preserve other settings
+      const currentConfig = credentials.aiAutoResponse || DEFAULT_AI_CONFIG;
+      newAIConfig = {
+        ...currentConfig,
+        enabled: configOrEnabled
+      };
+    } else {
+      // Update entire config object
+      newAIConfig = {
+        ...DEFAULT_AI_CONFIG,
+        ...configOrEnabled
+      };
+    }
+
+    // Update credentials
+    credentials.aiAutoResponse = newAIConfig;
+
+    // Save to database with timestamp
+    await db
+      .update(integration)
+      .set({
+        credentials: JSON.stringify(credentials),
+        updatedAt: new Date()
+      })
+      .where(
+        and(
+          eq(integration.userId, userId),
+          eq(integration.serviceId, "whatsapp")
+        )
+      );
+
+    console.log(`[updateAIConfig] Successfully updated AI config for user ${userId}:`, {
+      enabled: newAIConfig.enabled,
+      responseDelay: newAIConfig.responseDelay,
+      businessHoursOnly: newAIConfig.businessHoursOnly
+    });
+
+    return { 
+      success: true, 
+      data: newAIConfig 
+    };
+
+  } catch (error) {
+    console.error("[updateAIConfig] Unexpected error:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to update AI configuration" 
+    };
+  }
 }
