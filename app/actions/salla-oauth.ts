@@ -68,14 +68,14 @@ export async function generateSallaAuthUrl(state?: string) {
 /**
  * Exchange authorization code for access token
  */
-export async function exchangeSallaCode(code: string) {
+export async function exchangeSallaCode(code: string, clientIdOverride?: string, clientSecretOverride?: string) {
   try {
-    const clientId = process.env.SALLA_CLIENT_ID;
-    const clientSecret = process.env.SALLA_CLIENT_SECRET;
+    const clientId = clientIdOverride || process.env.SALLA_CLIENT_ID;
+    const clientSecret = clientSecretOverride || process.env.SALLA_CLIENT_SECRET;
     const redirectUri = process.env.SALLA_REDIRECT_URI || `${process.env.NEXT_PUBLIC_BASE_URL}/api/oauth/callback/salla`;
 
     if (!clientId || !clientSecret) {
-      throw new Error("Salla credentials are not configured in environment variables");
+      throw new Error("Salla credentials are not configured");
     }
 
     const params = new URLSearchParams();

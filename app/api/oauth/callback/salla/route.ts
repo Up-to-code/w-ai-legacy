@@ -49,8 +49,6 @@ export async function GET(req: NextRequest) {
 
     // Save credentials to database
     const saveResult = await saveSallaCredentials({
-      clientId,
-      clientSecret,
       accessToken,
       refreshToken,
       expiresAt,
