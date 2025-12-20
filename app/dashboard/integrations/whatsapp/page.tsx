@@ -6,7 +6,7 @@ import Link from "next/link";
 
 // Hook
 import { useWhatsAppIntegration } from "./hooks/useWhatsAppIntegration";
-import { ConnectedView , WizardStep1 , WizardStep2 , WizardStep3  } from "./components";
+import { ConnectedView, WizardStep1, WizardStep2, WizardStep3 } from "./components";
 
 // Components
 
@@ -26,11 +26,8 @@ export default function WhatsAppIntegrationPage() {
     }
 
     return (
-        <div className="min-h-screen  pb-20 relative overflow-hidden font-sans" dir="rtl">
-             
-    
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
-                {/* Breadcrumbs */}
+        <div className="min-h-screen pb-20 relative overflow-hidden font-sans" dir="rtl">
+            <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
                 <div className="flex items-center gap-2 text-sm text-gray-500 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
                     <Link href="/dashboard/integrations" className="hover:text-[#105D3B] transition-colors font-medium">التطبيقات</Link>
                     <ChevronLeft className="w-4 h-4 text-gray-400" />
@@ -50,11 +47,11 @@ export default function WhatsAppIntegrationPage() {
                                     <p className="text-sm text-gray-500 mt-1">هل أنت متأكد من هذا الإجراء؟</p>
                                 </div>
                             </div>
-                            
+
                             <p className="text-gray-700 leading-relaxed mb-6">
                                 سيؤدي إلغاء الربط إلى إيقاف جميع البوتات والحملات المرتبطة بهذا الحساب فوراً. ستحتاج لإعادة التفعيل مجدداً.
                             </p>
-                            
+
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => integration.setShowDisconnectModal(false)}
@@ -82,22 +79,20 @@ export default function WhatsAppIntegrationPage() {
                                 <MessageSquare className="w-8 h-8" />
                             </div>
                             <h1 className="text-2xl font-bold text-gray-900 mb-3 tracking-tight">WhatsApp Business API</h1>
-                            
+
                             {/* Steps Indicator */}
                             {integration.status !== 'connected' && (
                                 <div className="space-y-4 relative before:absolute before:right-[15px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gray-100">
                                     {[1, 2, 3].map((s) => (
                                         <div key={s} className="relative flex items-center gap-4">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-500 z-10 ${
-                                                integration.step >= s 
-                                                ? "bg-[#105D3B] border-[#105D3B] text-white shadow-lg shadow-[#105D3B]/20" 
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold border-2 transition-all duration-500 z-10 ${integration.step >= s
+                                                ? "bg-[#105D3B] border-[#105D3B] text-white shadow-lg shadow-[#105D3B]/20"
                                                 : "bg-white border-gray-200 text-gray-400"
-                                            }`}>
+                                                }`}>
                                                 {s}
                                             </div>
-                                            <span className={`text-sm font-medium transition-colors duration-300 ${
-                                                integration.step >= s ? "text-gray-900" : "text-gray-400"
-                                            }`}>
+                                            <span className={`text-sm font-medium transition-colors duration-300 ${integration.step >= s ? "text-gray-900" : "text-gray-400"
+                                                }`}>
                                                 {s === 1 && "المفاتيح"}
                                                 {s === 2 && "الويب هوك"}
                                                 {s === 3 && "التحقق"}
@@ -107,7 +102,7 @@ export default function WhatsAppIntegrationPage() {
                                 </div>
                             )}
 
-                             {integration.status === 'connected' && (
+                            {integration.status === 'connected' && (
                                 <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
                                     <div className="flex items-center gap-2 text-green-700 font-bold mb-1">
                                         <span className="w-2 h-2 rounded-full bg-green-500"></span>
@@ -121,7 +116,7 @@ export default function WhatsAppIntegrationPage() {
                         </div>
 
                         {/* Help Box */}
-                         <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 backdrop-blur-xl rounded-3xl p-6 border border-blue-100/50">
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 backdrop-blur-xl rounded-3xl p-6 border border-blue-100/50">
                             <h3 className="font-bold text-blue-900 mb-2 text-sm">تحتاج مساعدة؟</h3>
                             <p className="text-xs text-blue-700/80 leading-relaxed mb-4">
                                 راجع دليل الربط التفصيلي للحصول على شرح خطوة بخطوة لكيفية استخراج البيانات من Meta.
@@ -136,7 +131,7 @@ export default function WhatsAppIntegrationPage() {
                     <div className="lg:col-span-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
                         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 shadow-xl shadow-[#105D3B]/5 min-h-[500px] transition-all duration-500">
                             {integration.status === "connected" ? (
-                                <ConnectedView 
+                                <ConnectedView
                                     formData={integration.formData}
                                     setFormData={integration.setFormData}
                                     handleSave={integration.saveSettings}
@@ -145,11 +140,12 @@ export default function WhatsAppIntegrationPage() {
                                     handleCopy={integration.copyToClipboard}
                                     refreshVerifyToken={integration.refreshToken}
                                     webhookUrl={integration.webhookUrl}
+                                    onAIConfigChange={integration.updateAIConfig}
                                 />
                             ) : (
                                 <>
                                     {integration.step === 1 && (
-                                        <WizardStep1 
+                                        <WizardStep1
                                             formData={integration.formData}
                                             setFormData={integration.setFormData}
                                             handleSaveCredentials={integration.saveCredentials}
@@ -157,7 +153,7 @@ export default function WhatsAppIntegrationPage() {
                                         />
                                     )}
                                     {integration.step === 2 && (
-                                        <WizardStep2 
+                                        <WizardStep2
                                             webhookUrl={integration.webhookUrl}
                                             verifyToken={integration.formData.verifyToken}
                                             refreshVerifyToken={integration.refreshToken}
@@ -168,7 +164,7 @@ export default function WhatsAppIntegrationPage() {
                                         />
                                     )}
                                     {integration.step === 3 && (
-                                        <WizardStep3 
+                                        <WizardStep3
                                             setStatus={integration.setStatus}
                                             setStep={integration.setStep}
                                         />

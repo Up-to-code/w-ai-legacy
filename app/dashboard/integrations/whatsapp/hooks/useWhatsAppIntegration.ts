@@ -11,7 +11,7 @@ import {
 } from "@/app/actions/integrations";
 import { verifyWebhookSubscription } from "@/app/actions/verify-webhook-subscription";
 import { sendTestMessage } from "@/app/actions/send-test-message";
-import type { WhatsAppFormData, WhatsAppStatus, WhatsAppLoadingStates } from "../types";
+import type { WhatsAppFormData, WhatsAppStatus, WhatsAppLoadingStates, WhatsAppAIConfig } from "../types";
 
 const BASE_WEBHOOK_URL = `${process.env.NEXT_PUBLIC_BASE_URL}/api/webhook/whatsapp`;
 
@@ -21,11 +21,25 @@ const generateToken = (): string => {
   return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
 };
 
+const defaultAIConfig: WhatsAppAIConfig = {
+  enabled: true,
+  responseDelay: 2,
+  businessHoursOnly: false,
+  businessHours: {
+    start: "09:00",
+    end: "18:00",
+    timezone: "Africa/Cairo",
+    days: [1, 2, 3, 4, 5] // Mon-Fri
+  },
+  fallbackMessage: "شكراً لتواصلك! سنرد عليك في أقرب وقت."
+};
+
 const initialFormData: WhatsAppFormData = {
   accessToken: "",
   phoneNumberId: "",
   businessAccountId: "",
-  verifyToken: ""
+  verifyToken: "",
+  aiAutoResponse: defaultAIConfig
 };
 
 const initialLoadingStates: WhatsAppLoadingStates = {
@@ -85,7 +99,8 @@ export function useWhatsAppIntegration() {
               accessToken: credentials.accessToken || "",
               phoneNumberId: credentials.phoneNumberId || "",
               businessAccountId: credentials.businessAccountId || "",
-              verifyToken: credentials.verifyToken || generateToken()
+              verifyToken: credentials.verifyToken || generateToken(),
+              aiAutoResponse: credentials.aiAutoResponse || defaultAIConfig
             });
             setUserId(result.data.userId);
           } else {
@@ -273,6 +288,11 @@ export function useWhatsAppIntegration() {
     setStep(0);
   }, []);
 
+  // Update AI configuration
+  const updateAIConfig = useCallback((config: WhatsAppAIConfig) => {
+    setFormDataState(prev => ({ ...prev, aiAutoResponse: config }));
+  }, []);
+
   return {
     // State
     formData,
@@ -300,6 +320,7 @@ export function useWhatsAppIntegration() {
     refreshToken,
     sendTest,
     completeWizard,
-    copyToClipboard
+    copyToClipboard,
+    updateAIConfig
   };
 }

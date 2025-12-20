@@ -249,7 +249,7 @@ export class WhatsAppService {
   private async handleCustomerMessage(msg: any, contact: any, integ: typeof integration.$inferSelect) {
        const { msgBody } = this.parseMessageContent(msg);
        // Trigger auto-reply bot
-       await this.triggerBot(integ.userId, contact.id, msgBody);
+       await this.triggerBot(integ.userId, contact.id, msgBody, integ);
   }
 
   /**
@@ -272,7 +272,7 @@ export class WhatsAppService {
 
        // We still run the bot for actions but with explicit context
        // this helps the AI understand it was a button click or interaction
-       await this.triggerBot(integ.userId, contact.id, `[CUSTOMER_ACTION]: ${msgBody}`);
+       await this.triggerBot(integ.userId, contact.id, `[CUSTOMER_ACTION]: ${msgBody}`, integ);
   }
 
   /**
@@ -405,8 +405,47 @@ export class WhatsAppService {
       }
   }
 
-  private async triggerBot(userId: string, contactId: string, userMessage: string) {
+  private async triggerBot(userId: string, contactId: string, userMessage: string, integrationRecord?: typeof integration.$inferSelect) {
         try {
+            // 0. Check WhatsApp AI Configuration
+            let aiConfig: any = null;
+            if (integrationRecord?.credentials) {
+                const creds = typeof integrationRecord.credentials === 'string' 
+                    ? JSON.parse(integrationRecord.credentials) 
+                    : integrationRecord.credentials;
+                aiConfig = creds.aiAutoResponse;
+            }
+
+            // Check if AI should respond
+            if (aiConfig && !aiConfig.enabled) {
+                console.log(`[Bot] AI auto-response is disabled for user ${userId}`);
+                
+                // Send fallback message if configured
+                if (aiConfig.fallbackMessage && integrationRecord) {
+                    await this.sendFallbackMessage(contactId, aiConfig.fallbackMessage, integrationRecord);
+                }
+                return;
+            }
+
+            // Check business hours
+            if (aiConfig?.businessHoursOnly && aiConfig?.businessHours) {
+                const withinHours = this.isWithinBusinessHours(aiConfig.businessHours);
+                if (!withinHours) {
+                    console.log(`[Bot] Outside business hours for user ${userId}`);
+                    if (aiConfig.fallbackMessage && integrationRecord) {
+                        await this.sendFallbackMessage(contactId, aiConfig.fallbackMessage, integrationRecord);
+                    }
+                    return;
+                }
+            }
+
+            // Apply response delay
+            const delay = aiConfig?.responseDelay || 0;
+            if (delay > 0) {
+                console.log(`[Bot] Delaying response by ${delay} seconds...`);
+                await new Promise(resolve => setTimeout(resolve, delay * 1000));
+            }
+
             // 1. Get Bot Settings
             let settings = await db.query.botSetting.findFirst({
                 where: eq(botSetting.userId, userId)
@@ -552,5 +591,96 @@ export class WhatsAppService {
       } catch (error) {
           console.error("[Bot] Error generating AI response:", error);
       }
+  }
+
+  /**
+   * Check if current time is within business hours
+   */
+  private isWithinBusinessHours(businessHours: any): boolean {
+    try {
+      const now = new Date();
+      const tz = businessHours.timezone || "Africa/Cairo";
+      
+      // Get current day (0 = Sunday, 6 = Saturday)
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        weekday: 'short'
+      });
+      const dayName = formatter.format(now);
+      const dayMap: Record<string, number> = {
+        'Sun': 0, 'Mon': 1, 'Tue': 2, 'Wed': 3, 'Thu': 4, 'Fri': 5, 'Sat': 6
+      };
+      const currentDay = dayMap[dayName];
+
+      // Check if today is a business day
+      if (!businessHours.days.includes(currentDay)) {
+        return false;
+      }
+
+      // Get current time in timezone
+      const timeFormatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: tz,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+      const currentTime = timeFormatter.format(now);
+
+      // Check if current time is within business hours
+      const [currentHour, currentMinute] = currentTime.split(':').map(Number);
+      const [startHour, startMinute] = businessHours.start.split(':').map(Number);
+      const [endHour, endMinute] = businessHours.end.split(':').map(Number);
+
+      const currentMinutes = currentHour * 60 + currentMinute;
+      const startMinutes = startHour * 60 + startMinute;
+      const endMinutes = endHour * 60 + endMinute;
+
+      return currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+    } catch (error) {
+      console.error('[Business Hours] Error checking time:', error);
+      return true; // Fail open
+    }
+  }
+
+  /**
+   * Send fallback message when AI is disabled or outside business hours
+   */
+  private async sendFallbackMessage(contactId: string, message: string, integrationRecord: typeof integration.$inferSelect) {
+    try {
+      const creds = typeof integrationRecord.credentials === 'string' 
+        ? JSON.parse(integrationRecord.credentials) 
+        : integrationRecord.credentials;
+
+      const [contactRecord] = await db
+        .select()
+        .from(contact)
+        .where(eq(contact.id, contactId))
+        .limit(1);
+
+      if (!contactRecord || !contactRecord.phone) {
+        console.log(`[Fallback] Could not find contact for ID ${contactId}`);
+        return;
+      }
+
+      const result = await sendMessage(contactRecord.phone, message, creds);
+      
+      // Save fallback message to DB
+      await db.insert(message as any).values({
+        userId: integrationRecord.userId,
+        contactId,
+        direction: "outbound",
+        content: message,
+        status: result.success ? "sent" : "failed",
+        metadata: JSON.stringify({
+          type: 'fallback',
+          wa_id: result.messageId
+        }),
+        sentAt: new Date(),
+      });
+
+      console.log(`[Fallback] Sent to ${contactRecord.phone}: ${result.success}`);
+    } catch (error) {
+      console.error('[Fallback] Error sending message:', error);
+    }
   }
 }
