@@ -68,6 +68,10 @@ export function ConnectedView({
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
         {/* Left Column: Configuration & Test */}
         <div className="xl:col-span-7 space-y-6">
+          <TestMessageCard
+            onSendTest={handleSendTestMessage}
+            loading={testBookingLoading}
+          />
           <ConfigurationCard
             formData={formData}
             setFormData={setFormData}
@@ -79,10 +83,7 @@ export function ConnectedView({
             onDisconnect={() => setShowDisconnectModal(true)}
           />
 
-          <TestMessageCard
-            onSendTest={handleSendTestMessage}
-            loading={testBookingLoading}
-          />
+
         </div>
 
         {/* Right Column: AI Settings (Sticky on Desktop) */}
@@ -91,6 +92,7 @@ export function ConnectedView({
             <AISettings
               config={formData.aiAutoResponse}
               onChange={onAIConfigChange}
+              loading={loading}
             />
           )}
         </div>

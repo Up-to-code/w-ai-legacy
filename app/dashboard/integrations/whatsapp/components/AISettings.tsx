@@ -6,9 +6,10 @@ import { WhatsAppAIConfig } from "../types";
 interface AISettingsProps {
     config: WhatsAppAIConfig;
     onChange: (config: WhatsAppAIConfig) => void;
+    loading?: boolean;
 }
 
-export default function AISettings({ config, onChange }: AISettingsProps) {
+export default function AISettings({ config, onChange, loading = false }: AISettingsProps) {
     const updateConfig = (updates: Partial<WhatsAppAIConfig>) => {
         onChange({ ...config, ...updates });
     };
@@ -54,13 +55,13 @@ export default function AISettings({ config, onChange }: AISettingsProps) {
                         </div>
                     </div>
                     <div
-                        onClick={() => updateConfig({ enabled: !config.enabled })}
-                        className={`w-14 h-7 rounded-full relative transition-all duration-300 cursor-pointer ${config.enabled ? 'bg-primary' : 'bg-gray-200'
-                            }`}
+                        onClick={() => !loading && updateConfig({ enabled: !config.enabled })}
+                        className={`w-14 h-7 rounded-full relative transition-all duration-300 ${loading ? 'cursor-wait opacity-50' : 'cursor-pointer'
+                            } ${config.enabled ? 'bg-primary' : 'bg-gray-200'}`}
                     >
                         <div
                             className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-all duration-300 ${config.enabled ? 'right-1' : 'right-8'
-                                }`}
+                                } ${loading ? 'animate-pulse' : ''}`}
                         />
                     </div>
                 </div>

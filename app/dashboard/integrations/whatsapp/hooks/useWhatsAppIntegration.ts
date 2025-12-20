@@ -288,10 +288,34 @@ export function useWhatsAppIntegration() {
     setStep(0);
   }, []);
 
-  // Update AI configuration
-  const updateAIConfig = useCallback((config: WhatsAppAIConfig) => {
+  // Update AI configuration with auto-save
+  const updateAIConfig = useCallback(async (config: WhatsAppAIConfig) => {
+    const previousConfig = formData.aiAutoResponse;
+    
+    // Update local state immediately for instant UI feedback
     setFormDataState(prev => ({ ...prev, aiAutoResponse: config }));
-  }, []);
+    
+    // Save to database
+    setLoading("isSaving", true);
+    try {
+      const { updateAIConfig: saveAIConfig } = await import("@/app/actions/update-ai-config");
+      const result = await saveAIConfig(config.enabled);
+      
+      if (result.success) {
+        toast.success("تم حفظ إعدادات الذكاء الاصطناعي");
+      } else {
+        toast.error(result.error || "فشل حفظ الإعدادات");
+        // Revert to previous state on failure
+        setFormDataState(prev => ({ ...prev, aiAutoResponse: previousConfig }));
+      }
+    } catch (error) {
+      toast.error("حدث خطأ أثناء الحفظ");
+      // Revert to previous state on failure
+      setFormDataState(prev => ({ ...prev, aiAutoResponse: previousConfig }));
+    } finally {
+      setLoading("isSaving", false);
+    }
+  }, [formData.aiAutoResponse, toast, setLoading]);
 
   return {
     // State
