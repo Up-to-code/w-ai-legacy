@@ -6,6 +6,7 @@ export type IntegrationStatus = "connected" | "disconnected" | "error";
 
 export type IntegrationServiceId = 
   | "whatsapp" 
+  | "salla"
   | "zapier" 
   | "slack" 
   | "mailchimp" 

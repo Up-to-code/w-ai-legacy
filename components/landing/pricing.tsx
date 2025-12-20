@@ -1,4 +1,4 @@
-import { Check, X } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 
 const plans = [
   {
@@ -50,7 +50,7 @@ const plans = [
       "SLA ضمان مستوى الخدمة",
       "نشر على سيرفرات خاصة",
     ],
-    cta: "اطلب عرض سعر",
+    cta: "تواصل معنا",
     highlighted: false,
     buttonVariant: "outline"
   },
@@ -58,75 +58,68 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section className="py-24 bg-gray-50/50" dir="rtl" id="pricing">
+    <section className="py-24 relative overflow-hidden" dir="rtl" id="pricing">
+      {/* Background Gradients */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-50/50 rounded-full blur-3xl -z-10"></div>
+
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="text-center mb-16 max-w-3xl mx-auto">
-          <h2 className="text-sm font-bold text-green-600 mb-2 tracking-wide uppercase">الأسعار</h2>
+          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-bold mb-4 border border-green-100 uppercase tracking-wider">
+            باقات مرنة
+          </div>
           <h3 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
-            خطط مرنة تناسب طموحك
+            استثمار ذكي <span className="text-green-600">لنمو أعمالك</span>
           </h3>
           <p className="text-gray-500 text-lg leading-relaxed">
-            ابدأ مجاناً اليوم، وقم بالترقية عندما تحتاج إلى المزيد. لا توجد رسوم خفية أو عقود طويلة الأجل.
+            اختر الخطة المناسبة لحجم أعمالك. ابدأ مجاناً وقم بالترقية مع نمو مبيعاتك.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
           {plans.map((plan, index) => (
-            <div 
-              key={index} 
-              className={`relative rounded-3xl p-8 transition-all duration-300 ${
-                plan.highlighted 
-                  ? "bg-white shadow-[0_20px_40px_-15px_rgba(16,93,59,0.2)] border-2 border-[#105D3B] md:-mt-8 md:mb-8 z-10 scale-105" 
-                  : "bg-white border border-gray-100 hover:border-green-100 hover:shadow-lg"
-              }`}
+            <div
+              key={index}
+              className={`relative rounded-[32px] p-8 transition-all duration-300 group ${plan.highlighted
+                  ? "bg-gray-900 text-white shadow-2xl shadow-green-900/20 md:-mt-4 md:mb-4 z-10 hover:-translate-y-2"
+                  : "bg-white border border-gray-100 hover:border-green-200 hover:shadow-xl hover:shadow-green-900/5 hover:-translate-y-1"
+                }`}
             >
               {plan.highlighted && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#105D3B] text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">
-                  الأكثر طلباً 🔥
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 fill-current" /> الأكثر طلباً
                 </div>
               )}
-              
-              <div className="mb-8">
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h4>
-                <p className="text-gray-500 text-sm leading-relaxed min-h-[40px]">{plan.description}</p>
+
+              <div className="mb-6">
+                <h4 className={`text-xl font-bold mb-2 ${plan.highlighted ? "text-white" : "text-gray-900"}`}>{plan.name}</h4>
+                <p className={`text-sm leading-relaxed min-h-[40px] ${plan.highlighted ? "text-gray-400" : "text-gray-500"}`}>{plan.description}</p>
               </div>
-              
+
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold text-gray-900 tracking-tight">{plan.price}</span>
-                {plan.currency && <span className="text-xl font-semibold text-gray-900">{plan.currency}</span>}
-                {plan.period && <span className="text-gray-500 text-sm font-medium">{plan.period}</span>}
+                <span className={`text-5xl font-extrabold tracking-tight ${plan.highlighted ? "text-white" : "text-gray-900"}`}>{plan.price}</span>
+                {plan.currency && <span className={`text-xl font-semibold ${plan.highlighted ? "text-gray-300" : "text-gray-900"}`}>{plan.currency}</span>}
+                {plan.period && <span className={`text-sm font-medium ${plan.highlighted ? "text-gray-500" : "text-gray-500"}`}>{plan.period}</span>}
               </div>
-              
+
               <ul className="space-y-4 mb-10">
                 {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                    <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.highlighted ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
-                        <Check className="w-3 h-3" strokeWidth={3} />
+                  <li key={i} className={`flex items-start gap-3 text-sm ${plan.highlighted ? "text-gray-300" : "text-gray-700"}`}>
+                    <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${plan.highlighted ? "bg-green-500/20 text-green-400" : "bg-green-50 text-green-600"}`}>
+                      <Check className="w-3 h-3" strokeWidth={3} />
                     </div>
                     <span className="leading-snug">{feature}</span>
                   </li>
                 ))}
               </ul>
-              
-              <button className={`w-full py-4 rounded-xl font-bold text-base transition-all duration-200 ${
-                plan.highlighted 
-                  ? "bg-[#105D3B] text-white hover:bg-[#0d4f32] shadow-lg shadow-green-900/10 hover:shadow-green-900/20 active:scale-95" 
-                  : "bg-white text-gray-900 border-2 border-gray-100 hover:border-[#105D3B] hover:text-[#105D3B] active:scale-95"
-              }`}>
+
+              <button className={`w-full py-4 rounded-2xl font-bold text-base transition-all duration-200 ${plan.highlighted
+                  ? "bg-green-600 text-white hover:bg-green-500 shadow-lg shadow-green-900/30 active:scale-95"
+                  : "bg-gray-50 text-gray-900 hover:bg-green-50 hover:text-green-700 border border-transparent hover:border-green-200 active:scale-95"
+                }`}>
                 {plan.cta}
               </button>
-              
-              {plan.price === "0" && (
-                <p className="text-xs text-center text-gray-400 mt-4">لا تحتاج لبطاقة ائتمانية</p>
-              )}
             </div>
           ))}
-        </div>
-        
-        <div className="mt-16 text-center">
-            <p className="text-gray-500 text-sm">
-                هل لديك متطلبات خاصة؟ <a href="mailto:sales@w-ai.com" className="text-[#105D3B] font-semibold hover:underline">تواصل مع فريق المبيعات</a>
-            </p>
         </div>
       </div>
     </section>

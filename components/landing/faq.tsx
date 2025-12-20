@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, HelpCircle } from "lucide-react";
 
 const faqs = [
   {
@@ -23,47 +23,59 @@ const faqs = [
     question: "هل يمكنني إلغاء اشتراكي في أي وقت؟",
     answer: "نعم، يمكنك إلغاء اشتراكي أو تغييره في أي وقت من خلال لوحة التحكم الخاصة بك دون أي قيود.",
   },
+  {
+    question: "هل يمكنني ربط W-AI مع متجر سلة وزد؟",
+    answer: "نعم، نوفر تكاملاً مباشراً وسلساً مع منصات التجارة الإلكترونية مثل سلة وزد وشوبيفاي لادارة طلباتك وتحديثات المخزون.",
+  }
 ];
 
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <section className="py-24 bg-gray-50" dir="rtl" id="faq">
-      <div className="max-w-3xl mx-auto px-6">
+    <section className="py-24 bg-white relative overflow-hidden" dir="rtl" id="faq">
+      {/* Background */}
+      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_10%_20%,rgba(16,93,59,0.03),rgba(255,255,255,0))]" />
+
+      <div className="max-w-3xl mx-auto px-6 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+          <div className="inline-flex items-center justify-center p-3 bg-green-50 rounded-2xl mb-6">
+            <HelpCircle className="w-8 h-8 text-green-600" />
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-6">
             الأسئلة الشائعة
           </h2>
-          <p className="text-gray-500">
-            أجوبة على أكثر الأسئلة تكراراً حول منصة W-AI.
+          <p className="text-gray-500 text-lg">
+            إليك إجابات على أكثر الأسئلة تكراراً التي تصلنا. لم تجد إجابتك؟ تواصل معنا.
           </p>
         </div>
 
         <div className="space-y-4">
           {faqs.map((faq, index) => (
-            <div 
-              key={index} 
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden"
+            <div
+              key={index}
+              className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${openIndex === index
+                  ? "border-green-200 shadow-lg shadow-green-900/5 ring-1 ring-green-100"
+                  : "border-gray-100 hover:border-green-100 hover:bg-gray-50/50"
+                }`}
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full flex items-center justify-between p-6 text-right hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-6 text-right"
               >
-                <span className="font-semibold text-gray-900">{faq.question}</span>
-                {openIndex === index ? (
-                  <Minus className="w-5 h-5 text-green-600 flex-shrink-0" />
-                ) : (
-                  <Plus className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                )}
+                <span className={`font-bold text-lg transition-colors ${openIndex === index ? "text-green-700" : "text-gray-900"}`}>
+                  {faq.question}
+                </span>
+                <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${openIndex === index ? "bg-green-100 text-green-600" : "bg-gray-100 text-gray-400"}`}>
+                  {openIndex === index ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                </span>
               </button>
-              
-              <div 
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                  openIndex === index ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
-                }`}
+
+              <div
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${openIndex === index ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+                  }`}
               >
-                <p className="px-6 pb-6 text-gray-600 leading-relaxed">
+                <p className="px-6 pb-6 text-gray-600 leading-relaxed text-lg border-t border-gray-50 pt-4">
                   {faq.answer}
                 </p>
               </div>
