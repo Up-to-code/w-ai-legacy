@@ -1,209 +1,291 @@
+"use client";
+
 import Link from "next/link";
-import { PlayCircle, Bot, ArrowLeft, Phone, Video, MoreVertical, Plus, Mic, Camera, Smile } from "lucide-react";
+import { PlayCircle, Bot, ArrowLeft, MoreVertical, Plus, Mic, Camera, Smile, Sparkles, Zap, Shield, MessageCircle, BarChart3, Users, Settings, Search, Bell, Home, PieChart } from "lucide-react";
+import { useState, useEffect } from "react";
+
+const words = [
+    "أقوى موظف مبيعات",
+    "نظام حجز آلي",
+    "مركز خدمة عملاء",
+    "سكرتير ذكي"
+];
 
 export function Hero() {
-  return (
-    <section className="pt-8 pb-20 px-6 md:px-12 max-w-7xl mx-auto" dir="rtl">
-      <div className="grid lg:grid-cols-2 gap-12 items-center">
-        
-        {/* Right Column: Text Content */}
-        <div className="text-right space-y-8 order-1 lg:order-1">
-          <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 px-4 py-1.5 rounded-full text-sm font-semibold border border-green-100">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-            الذكاء الاصطناعي وصل إلى الواتساب 🚀
-          </div>
-          
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.15]">
-            حوّل واتسابك إلى <br />
-            <span className="text-[#105D3B]">أقوى موظف مبيعات.</span>
-          </h1>
-          
-          <p className="text-lg md:text-xl text-gray-500 leading-relaxed max-w-xl">
-            دع الذكاء الاصطناعي يتولى المحادثات، يغلق الصفقات، ويجيب على العملاء 24/7 بينما تركز أنت على تنمية أعمالك.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4">
-            <Link href="/register" className="w-full sm:w-auto bg-[#105D3B] text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-[#0d4f32] transition-all shadow-lg shadow-green-900/20 transform hover:-translate-y-1 text-center">
-              جرب مجاناً الآن
-            </Link>
-            <button className="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
-              <PlayCircle className="w-6 h-6 text-gray-400" /> كيف يعمل؟
-            </button>
-          </div>
-          
-          <div className="pt-8 flex items-center gap-4 text-sm text-gray-400">
-             <div className="flex -space-x-2 space-x-reverse">
-                {[1,2,3,4].map((i) => (
-                    <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white"></div>
-                ))}
-             </div>
-             <p>أكثر من 1000 شركة تعتمد علينا</p>
-          </div>
-        </div>
+    const [index, setIndex] = useState(0);
+    const [fade, setFade] = useState(false);
 
-        {/* Left Column: Phone Mockup */}
-        <div className="relative order-2 lg:order-2 flex justify-center lg:justify-end">
-             {/* Decorative Blobs */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-tr from-green-100 to-blue-50 rounded-full blur-3xl opacity-60 -z-10"></div>
-             
-             {/* SVG Phone Frame Container */}
-             <div className="relative w-[320px] md:w-[380px] h-[650px] md:h-[700px]">
-                {/* SVG Frame */}
-                <svg viewBox="0 0 380 700" className="absolute inset-0 w-full h-full drop-shadow-2xl z-20 pointer-events-none">
-                    <defs>
-                        <mask id="screen-mask">
-                            {/* White rect = visible, Black shape = hidden (cutout) */}
-                            <rect width="100%" height="100%" fill="white" />
-                            {/* The screen shape to cut out */}
-                            <path d="M50,3 H330 A47,47 0 0,1 377,50 V650 A47,47 0 0,1 330,697 H50 A47,47 0 0,1 3,650 V50 A47,47 0 0,1 50,3 Z" fill="black" />
-                        </mask>
-                    </defs>
-                    
-                    {/* Phone Body with Mask applied */}
-                    <path d="M50,0 H330 A50,50 0 0,1 380,50 V650 A50,50 0 0,1 330,700 H50 A50,50 0 0,1 0,650 V50 A50,50 0 0,1 50,0 Z" fill="#111" mask="url(#screen-mask)" />
-                    
-                    {/* Notch (remains solid) */}
-                    <path d="M120,0 H260 A0,0 0 0,1 260,0 V25 A15,15 0 0,1 245,40 H135 A15,15 0 0,1 120,25 V0 A0,0 0 0,1 120,0 Z" fill="#111" />
-                </svg>
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setFade(true); // Start fade out
+            setTimeout(() => {
+                setIndex((prev) => (prev + 1) % words.length);
+                setFade(false); // Start fade in
+            }, 500); // Wait for fade out
+        }, 4000);
+        return () => clearInterval(interval);
+    }, []);
 
-                {/* Screen Content */}
-                <div className="absolute inset-[3px] rounded-[47px] overflow-hidden bg-[#EFEAE2] z-10 flex flex-col" style={{ backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')", backgroundBlendMode: "overlay" }}>
-                    
-                    {/* Status Bar Spacer */}
-                    <div className="h-10 bg-[#008069] w-full shrink-0"></div>
+    return (
+        <section className="pt-32 pb-40 px-6 md:px-12 relative z-10 overflow-hidden" dir="rtl">
 
-                    {/* WhatsApp Header */}
-                    <div className="bg-[#008069] text-white p-3 flex items-center justify-between shadow-md shrink-0">
-                        <div className="flex items-center gap-2">
-                            <ArrowLeft className="w-5 h-5 cursor-pointer" />
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center overflow-hidden">
-                                <Bot className="w-6 h-6 text-[#008069]" />
-                            </div>
-                            <div className="flex flex-col">
-                                <h4 className="font-semibold text-base leading-tight">Musaed AI</h4>
-                                <p className="text-[11px] text-white/80">Business Account</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Video className="w-5 h-5" />
-                            <Phone className="w-5 h-5" />
-                            <MoreVertical className="w-5 h-5" />
-                        </div>
-                    </div>
+            {/* Background Spotlights */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[800px] -z-10">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[500px] bg-[#105D3B]/5 rounded-full blur-[120px]"></div>
+            </div>
 
-                    {/* Chat Area Scrollable */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-                         
-                         {/* Date Pill */}
-                         <div className="flex justify-center sticky top-0 z-10">
-                            <span className="bg-[#FFF] text-[#54656f] text-[10px] font-medium py-[5px] px-3 rounded-lg shadow-sm border border-[#f0f0f0]">
-                                اليوم
-                            </span>
-                         </div>
+            <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
 
-                         {/* Outgoing (User) */}
-                         <div className="flex justify-end">
-                            <div className="bg-[#E7FFDB] py-2 px-3 rounded-lg rounded-tl-none text-gray-900 max-w-[85%] shadow-sm relative text-sm leading-snug">
-                                السلام عليكم، وش العروض الموجودة؟
-                                 <div className="flex items-end justify-end gap-1 mt-1">
-                                    <span className="text-[10px] text-gray-500">10:45 AM</span>
-                                    <span className="text-[#53bdeb]">
-                                        <svg width="14" height="10" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.6667 0L4.33333 7.33333L1.66667 4.66667L0 6.33333L4.33333 10.6667L13.3333 1.66667L11.6667 0Z" fill="currentColor"/>
-                                            <path d="M15.9997 1.66667L8.66634 9L7.33301 7.66667L14.333 0.666667L15.9997 1.66667Z" fill="currentColor"/>
-                                       </svg>
-                                    </span>
-                                 </div>
-                            </div>
-                        </div>
-
-                         {/* Incoming (Bot - Audio) */}
-                         <div className="flex justify-start">
-                            <div className="bg-white p-2 rounded-lg rounded-tr-none text-gray-900 max-w-[85%] shadow-sm relative">
-                                <div className="flex items-center gap-3 min-w-[200px]">
-                                    <div className="w-10 h-10 rounded-full bg-[#f0f2f5] flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors">
-                                        <PlayCircle className="w-6 h-6 text-[#54656f] fill-[#54656f]" />
-                                    </div>
-                                    <div className="flex-1 flex flex-col justify-center gap-1">
-                                        <div className="h-1 bg-gray-200 rounded-full w-full relative overflow-hidden">
-                                             <div className="absolute right-0 top-0 h-full w-[40%] bg-[#54656f]"></div>
-                                        </div>
-                                        <span className="text-[10px] text-gray-500 text-left">0:15</span>
-                                    </div>
-                                    <div className="w-6 h-6 rounded-full overflow-hidden">
-                                        <Bot className="w-full h-full p-1 bg-green-100 text-green-600" />
-                                    </div>
-                                </div>
-                                <span className="text-[10px] text-gray-400 block text-left mt-1 ml-1">10:45 AM</span>
-                            </div>
-                        </div>
-
-                        {/* Incoming (Bot - Image) */}
-                        <div className="flex justify-start">
-                            <div className="bg-white p-1 rounded-lg rounded-tr-none shadow-sm max-w-[85%] relative">
-                                <div className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video mb-1">
-                                     <div className="absolute inset-0 flex items-center justify-center text-gray-400 bg-gray-200">
-                                        <span className="text-xs">Image Placeholder</span>
-                                     </div>
-                                     {/* Overlay Text mimicking a poster */}
-                                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 bg-[#105D3B]/90 text-white">
-                                        <span className="font-bold text-lg">عرض اليوم الوطني</span>
-                                        <span className="text-3xl font-extrabold text-yellow-400 animate-pulse">50% خصم</span>
-                                        <span className="text-xs mt-1">استخدم كود: KSA94</span>
-                                     </div>
-                                </div>
-                                <p className="px-2 pb-1 text-sm text-gray-800 leading-snug">
-                                    هذا العرض خاص لعملاء التميز! 🇸🇦
-                                </p>
-                                <span className="text-[10px] text-gray-400 block text-left px-2 pb-1">10:46 AM</span>
-                            </div>
-                        </div>
-
-                        {/* Outgoing (User) */}
-                         <div className="flex justify-end">
-                            <div className="bg-[#E7FFDB] py-2 px-3 rounded-lg rounded-tl-none text-gray-900 max-w-[85%] shadow-sm relative text-sm leading-snug">
-                                تم، اعتمد لي الباقة.
-                                 <div className="flex items-end justify-end gap-1 mt-1">
-                                    <span className="text-[10px] text-gray-500">10:47 AM</span>
-                                    <span className="text-[#53bdeb]">
-                                        <svg width="14" height="10" viewBox="0 0 16 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M11.6667 0L4.33333 7.33333L1.66667 4.66667L0 6.33333L4.33333 10.6667L13.3333 1.66667L11.6667 0Z" fill="currentColor"/>
-                                            <path d="M15.9997 1.66667L8.66634 9L7.33301 7.66667L14.333 0.666667L15.9997 1.66667Z" fill="currentColor"/>
-                                       </svg>
-                                    </span>
-                                 </div>
-                            </div>
-                        </div>
-
-                         {/* Incoming (Bot - Link) */}
-                         <div className="flex justify-start">
-                            <div className="bg-white py-2 px-3 rounded-lg rounded-tr-none text-gray-900 max-w-[85%] shadow-sm relative text-sm leading-snug">
-                                تفضل رابط الدفع المباشر: 👇
-                                <span className="text-[#008069] block mt-1 underline cursor-pointer truncate">pay.w-ai.com/invoice/9283</span>
-                                <span className="text-[10px] text-gray-400 block text-left mt-1">10:47 AM</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="bg-[#f0f2f5] p-3 flex items-center gap-2 shrink-0 pb-6 mb-2">
-                        <Plus className="w-6 h-6 text-gray-500 cursor-pointer" />
-                        <div className="flex-1 bg-white rounded-full px-4 py-2 flex items-center justify-between text-gray-400 text-sm shadow-sm">
-                            <span>Message...</span>
-                            <div className="flex gap-3">
-                                 <Smile className="w-5 h-5 text-gray-400 cursor-pointer" />
-                                 <Camera className="w-5 h-5 text-gray-400 cursor-pointer" />
-                            </div>
-                        </div>
-                        <div className="w-10 h-10 bg-[#008069] rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:bg-[#006e5a] transition-colors">
-                             <Mic className="w-5 h-5 text-white" />
-                        </div>
-                    </div>
-
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-md border border-green-100 px-4 py-2 rounded-full text-sm font-semibold text-green-800 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-700 mb-8">
+                    <span className="relative flex h-3 w-3">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    الذكاء الاصطناعي وصل إلى الواتساب 🚀
                 </div>
-             </div>
-        </div>
-      </div>
-    </section>
-  );
+
+                {/* Main Heading */}
+                <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight text-gray-900 leading-[1.1] mb-8 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100 max-w-5xl">
+                    حوّل واتسابك إلى <br />
+                    <span className="relative inline-block text-[#105D3B]">
+                        <span className={`absolute left-0 right-0 transition-all duration-500 ${fade ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}`}>
+                            {words[index]}
+                        </span>
+                        <span className="opacity-0">{words[0]}</span> {/* Spacer */}
+                    </span>
+                </h1>
+
+                {/* Subheading */}
+                <p className="text-xl md:text-2xl text-gray-600 leading-relaxed max-w-2xl mx-auto mb-12 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                    أتمتة كاملة لمحادثاتك التجارية. دع الذكاء الاصطناعي يتولى المبيعات، الحجوزات، وخدمة العملاء 24/7 بينما تركز أنت على النمو.
+                </p>
+
+                {/* Buttons */}
+                <div className="flex flex-col sm:flex-row items-center gap-4 mb-24 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300 relative z-20">
+                    <Link href="/register" className="w-full sm:w-auto bg-[#105D3B] text-white px-10 py-5 rounded-2xl text-xl font-bold hover:bg-[#0d4f32] transition-all shadow-xl shadow-green-900/20 transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                        <Zap className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+                        ابدأ تجربتك المجانية
+                    </Link>
+                    <button className="w-full sm:w-auto bg-white text-gray-700 border border-gray-200 px-10 py-5 rounded-2xl text-xl font-semibold hover:bg-gray-50 transition-all flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
+                        <PlayCircle className="w-6 h-6 text-gray-400" /> مشاهدة الديمو
+                    </button>
+                </div>
+
+
+                {/* HERO VISUAL COMPOSITION */}
+                <div className="relative w-full max-w-[1100px] h-[600px] perspective-1000 animate-in fade-in zoom-in-50 duration-1000 delay-500">
+
+                    {/* 1. LAYER ONE: DASHBOARD BACKDROP */}
+                    <div className="absolute top-10 left-0 right-0 bottom-0 bg-white rounded-t-[40px] shadow-2xl border border-gray-200/60 overflow-hidden transform rotate-x-12 opacity-90 scale-95 origin-bottom translate-y-6">
+                        {/* Fake Dashboard Header */}
+                        <div className="h-16 border-b border-gray-100 flex items-center justify-between px-6 bg-white/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-2 text-gray-400">
+                                <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                                <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                            </div>
+                            <div className="w-1/3 h-8 bg-gray-50 rounded-full flex items-center px-4 gap-2">
+                                <Search className="w-4 h-4 text-gray-300" />
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <Bell className="w-5 h-5 text-gray-400" />
+                                <div className="w-8 h-8 rounded-full bg-green-100"></div>
+                            </div>
+                        </div>
+
+                        <div className="flex h-full">
+                            {/* Fake Sidebar */}
+                            <div className="w-20 md:w-64 border-l border-gray-100 p-6 space-y-4 bg-gray-50/30">
+                                <div className="flex items-center gap-3 text-[#105D3B] bg-green-50 p-3 rounded-xl font-bold">
+                                    <Home className="w-5 h-5" /> <span className="hidden md:inline">الرئيسية</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-500 p-3 rounded-xl">
+                                    <MessageCircle className="w-5 h-5" /> <span className="hidden md:inline">المحادثات</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-500 p-3 rounded-xl">
+                                    <Users className="w-5 h-5" /> <span className="hidden md:inline">العملاء</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-500 p-3 rounded-xl">
+                                    <BarChart3 className="w-5 h-5" /> <span className="hidden md:inline">التقارير</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-gray-500 p-3 rounded-xl">
+                                    <Settings className="w-5 h-5" /> <span className="hidden md:inline">الإعدادات</span>
+                                </div>
+                            </div>
+
+                            {/* Fake Main Content */}
+                            <div className="flex-1 p-8 bg-[#F9FAFB]/50">
+                                <div className="grid grid-cols-3 gap-6 mb-8">
+                                    <div className="h-32 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                                        <div className="w-8 h-8 bg-green-100 rounded-lg mb-4"></div>
+                                        <div className="h-2 w-16 bg-gray-100 rounded mb-2"></div>
+                                        <div className="h-6 w-24 bg-gray-200 rounded"></div>
+                                    </div>
+                                    <div className="h-32 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                                        <div className="w-8 h-8 bg-blue-100 rounded-lg mb-4"></div>
+                                        <div className="h-2 w-16 bg-gray-100 rounded mb-2"></div>
+                                        <div className="h-6 w-24 bg-gray-200 rounded"></div>
+                                    </div>
+                                    <div className="h-32 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                                        <div className="w-8 h-8 bg-orange-100 rounded-lg mb-4"></div>
+                                        <div className="h-2 w-16 bg-gray-100 rounded mb-2"></div>
+                                        <div className="h-6 w-24 bg-gray-200 rounded"></div>
+                                    </div>
+                                </div>
+                                <div className="h-64 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col gap-4">
+                                    <div className="h-4 w-1/4 bg-gray-100 rounded"></div>
+                                    <div className="flex-1 bg-gray-50/50 rounded-xl relative flex items-end justify-between p-4 gap-2">
+                                        <div className="w-full bg-green-200/50 rounded-t-lg h-[40%]"></div>
+                                        <div className="w-full bg-green-200/50 rounded-t-lg h-[60%]"></div>
+                                        <div className="w-full bg-green-200/50 rounded-t-lg h-[30%]"></div>
+                                        <div className="w-full bg-green-200/50 rounded-t-lg h-[80%]"></div>
+                                        <div className="w-full bg-[#105D3B] rounded-t-lg h-[90%] shadow-lg shadow-green-900/20"></div>
+                                        <div className="w-full bg-green-200/50 rounded-t-lg h-[50%]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Overlay Gradient to fade bottom */}
+                        <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-white to-transparent"></div>
+                    </div>
+
+
+                    {/* 2. LAYER TWO: PHONE MOCKUP (Floating Center) */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 w-[320px] md:w-[360px] transform hover:-translate-y-4 hover:scale-105 transition-all duration-700">
+
+                        {/* Floating Badges (Relative to Phone) */}
+                        <div className="absolute top-[20%] -right-16 z-30 bg-white p-4 rounded-2xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] border border-gray-100 hidden md:block animate-bounce delay-700 duration-[3000ms]">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                    <MessageCircle className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">تم الرد</p>
+                                    <p className="font-bold text-gray-900">0.1 ثانية ⚡️</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="absolute bottom-[20%] -left-16 z-30 bg-white p-4 rounded-2xl shadow-[0_20px_50px_-10px_rgba(0,0,0,0.1)] border border-gray-100 hidden md:block animate-bounce delay-1000 duration-[4000ms]">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                                    <Shield className="w-5 h-5 text-emerald-600" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-gray-500">حالة النظام</p>
+                                    <p className="font-bold text-gray-900">نشط 24/7</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        {/* Actual Phone */}
+                        <div className="relative bg-gray-900 rounded-[55px] p-4 shadow-[0_50px_100px_-20px_rgba(16,93,59,0.4)] border-4 border-gray-800 ring-1 ring-gray-900/50">
+                            {/* STATUS BAR & NOTCH */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black rounded-b-3xl z-30"></div>
+
+                            {/* SCREEN */}
+                            <div className="w-full h-[650px] bg-[#EFEAE2] rounded-[45px] overflow-hidden relative flex flex-col">
+
+                                {/* Header */}
+                                <div className="bg-[#008069] text-white pt-12 pb-3 px-4 flex items-center justify-between shadow-sm relative z-10">
+                                    <div className="flex items-center gap-3">
+                                        <ArrowLeft className="w-5 h-5" />
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center">
+                                            <Bot className="w-6 h-6 text-[#008069]" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-base">مساعد المبيعات 🤖</h4>
+                                            <p className="text-[11px] text-green-100">يرد عادة في الحال</p>
+                                        </div>
+                                    </div>
+                                    <MoreVertical className="w-5 h-5" />
+                                </div>
+
+                                {/* Chat Area */}
+                                <div className="flex-1 overflow-y-auto p-4 space-y-6 font-sans text-sm relative" style={{ backgroundImage: "url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')", backgroundBlendMode: "overlay" }}>
+
+                                    <div className="flex justify-center my-2">
+                                        <span className="bg-[#FFF]/90 shadow-sm px-3 py-1 rounded-lg text-[10px] text-gray-500 font-medium">اليوم</span>
+                                    </div>
+
+                                    {/* User Msg */}
+                                    <div className="flex justify-end animate-in slide-in-from-right-4 fade-in duration-500">
+                                        <div className="bg-[#E7FFDB] p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-gray-900">
+                                            <p>مرحباً، أبي أعرف أسعار الاشتراكات عندكم؟ 📋</p>
+                                            <div className="flex justify-end gap-1 mt-1 opacity-60">
+                                                <span className="text-[10px]">10:00 AM</span>
+                                                <span className="text-[#34B7F1]">✓✓</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bot Msg */}
+                                    <div className="flex justify-start animate-in slide-in-from-left-4 fade-in duration-500 delay-300">
+                                        <div className="bg-white p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[90%] text-gray-900">
+                                            <p className="mb-2">أهلاً بك يا غالي! 👋 <br /> عندنا باقات تناسب الجميع، وتفضل هذه العروض الحصرية لك:</p>
+
+                                            <div className="space-y-2">
+                                                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 hover:border-green-200 transition-colors cursor-pointer">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-bold text-[#105D3B]">الباقة الأساسية</span>
+                                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">شائع</span>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500">محادثات لا محدودة + دعم فني</p>
+                                                    <div className="mt-2 text-[#105D3B] font-bold text-sm">99 ر.س / شهر</div>
+                                                </div>
+
+                                                <div className="bg-[#105D3B]/5 p-3 rounded-xl border border-[#105D3B]/20 cursor-pointer">
+                                                    <div className="flex items-center justify-between mb-1">
+                                                        <span className="font-bold text-[#105D3B]">الباقة الاحترافية</span>
+                                                        <Sparkles className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                                                    </div>
+                                                    <p className="text-xs text-gray-600">كل مميزات الأساسية + متجر إلكتروني</p>
+                                                    <div className="mt-2 text-[#105D3B] font-bold text-sm">199 ر.س / شهر</div>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex justify-start gap-1 mt-2 opacity-60">
+                                                <span className="text-[10px]">10:00 AM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* User Msg */}
+                                    <div className="flex justify-end animate-in slide-in-from-right-4 fade-in duration-500 delay-1000">
+                                        <div className="bg-[#E7FFDB] p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[85%] text-gray-900">
+                                            <p>ممتاز، بشترك في الاحترافية! 🚀</p>
+                                            <div className="flex justify-end gap-1 mt-1 opacity-60">
+                                                <span className="text-[10px]">10:02 AM</span>
+                                                <span className="text-[#34B7F1]">✓✓</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                {/* Footer Input */}
+                                <div className="p-2 bg-[#f0f2f5] flex items-center gap-2">
+                                    <Plus className="w-6 h-6 text-[#008069]" />
+                                    <div className="flex-1 bg-white rounded-full h-9 px-4 flex items-center justify-between border border-white focus-within:border-[#008069]/50 transition-colors">
+                                        <span className="text-gray-400 text-xs">اكتب رسالة...</span>
+                                        <div className="flex gap-2 text-gray-400">
+                                            <Smile className="w-4 h-4 cursor-pointer hover:text-gray-600" />
+                                            <Camera className="w-4 h-4 cursor-pointer hover:text-gray-600" />
+                                        </div>
+                                    </div>
+                                    <div className="w-9 h-9 rounded-full bg-[#008069] flex items-center justify-center text-white shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                                        <Mic className="w-4 h-4" />
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    );
 }
